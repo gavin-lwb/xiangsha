@@ -12,6 +12,7 @@ import SwiftData
 /// 启动引导容器（3 屏 · PageTabView）
 ///
 /// 完成条件：第 3 屏勾选过敏原（至少 1 项含「无」）→ 写入 UserProfile → 切到主 TabView
+/// 顶部"跳过"按钮：老用户可直接跳过引导到主界面（过敏原默认「无」）
 struct OnboardingView: View {
     @AppStorage("onboardingCompleted") private var onboardingCompleted: Bool = false
     @State private var pageIndex: Int = 0
@@ -36,6 +37,18 @@ struct OnboardingView: View {
         .tabViewStyle(.page(indexDisplayMode: .always))
         .indexViewStyle(.page(backgroundDisplayMode: .always))
         .background(Color.theme.background)
+        .overlay(alignment: .topTrailing) {
+            // 顶部跳过按钮
+            Button(action: skipOnboarding) {
+                Text("跳过")
+                    .font(Font.theme.bodyEmphasis)
+                    .foregroundStyle(Color.theme.textSecondary)
+                    .padding(.horizontal, ThemeSpacing.md)
+                    .padding(.vertical, ThemeSpacing.xs)
+            }
+            .padding(.top, ThemeSpacing.md)
+            .padding(.trailing, ThemeSpacing.md)
+        }
     }
 
     /// 完成引导（D088 强制写过敏原）
@@ -45,6 +58,19 @@ struct OnboardingView: View {
             : Array(selectedAllergens)
 
         // 写入 UserProfile
+        if let profile = try? modelContext.fetch(FetchDescriptor<UserProfile>()).first {
+            profile.allergens = allergens
+            profile.updatedAt = Date()
+            try? modelContext.save()
+        }
+
+        onboardingCompleted = true
+    }
+
+    /// 跳过引导：默认「无」过敏原，直接进主界面
+    private func skipOnboarding() {
+        let allergens = [UserProfile.noAllergenSentinel]
+
         if let profile = try? modelContext.fetch(FetchDescriptor<UserProfile>()).first {
             profile.allergens = allergens
             profile.updatedAt = Date()

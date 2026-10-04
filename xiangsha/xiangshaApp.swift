@@ -51,25 +51,29 @@ struct xiangshaApp: App {
             // M0 lite 首次启动播种（SeedService 内部用 UserProfile 存在与否判断）
             SeedService.seedIfNeeded(context: context)
             // D132 慢节奏重置（跨午夜 / 时区切换 / 时钟回拨）
-            checkDailyReset(context: context)
+            Self.checkDailyReset(context: context)
             // D133 预热 fetch
             _ = try? context.fetch(FetchDescriptor<DecisionScene>())
             _ = try? context.fetch(FetchDescriptor<UserProfile>())
         }
     }
 
-    /// D132 慢节奏跨午夜重置检查
+    /// D132 慢节奏跨午夜重置检查（static 避免 mutating self 问题）
     private static func checkDailyReset(context: ModelContext) {
         guard let profiles = try? context.fetch(FetchDescriptor<UserProfile>()) else { return }
+        var didChange = false
         for profile in profiles {
             if UserProfile.shouldResetDrawsToday(lastDrawDate: profile.lastDrawDate) {
                 profile.drawsToday = 0
                 profile.lastDrawDate = nil
                 profile.lastResetDate = Date()
                 profile.updatedAt = Date()
+                didChange = true
             }
         }
-        try? context.save()
+        if didChange {
+            try? context.save()
+        }
     }
 
     var body: some SwiftUI.Scene {

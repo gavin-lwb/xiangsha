@@ -134,7 +134,7 @@ extension UserProfile {
     /// - 重置 drawsToday = 0
     /// - 更新 lastDrawDate = nil / lastResetDate = now
     /// - 自动持久化（如果 modelContext 注入）
-    mutating func resetDailyDrawCount(modelContext: ModelContext? = nil) {
+    func resetDailyDrawCount(modelContext: ModelContext? = nil) {
         self.drawsToday = 0
         self.lastDrawDate = nil
         self.lastResetDate = Date()
