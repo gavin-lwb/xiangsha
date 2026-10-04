@@ -37,6 +37,8 @@ struct EatView: View {
     @State private var showFavorites: Bool = false
     @State private var showHistory: Bool = false
 
+    @Environment(\.modelContext) private var modelContext
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -98,6 +100,7 @@ struct EatView: View {
             // 初始化 ViewModel 数据
             viewModel.scene = eatScenes.first
             viewModel.selectedPool = eatScenes.first?.cardPools.first
+            viewModel.modelContext = modelContext
             if let profile = profiles.first {
                 viewModel.userProfileSnapshot = UserProfileSnapshot(
                     from: profile,
@@ -135,7 +138,19 @@ private struct EatContentView: View {
 
             // 主展示区
             if let result = viewModel.lastResult {
-                DrawResultView(result: result)
+                DrawResultView(
+                    result: result,
+                    isFavorite: viewModel.isCurrentFavorite,
+                    onToggleFavorite: { viewModel.toggleFavorite() }
+                )
+
+                // L2 过敏警告 banner（D088）
+                if viewModel.showingAllergenWarning {
+                    AllergenWarningBanner(
+                        onAccept: { viewModel.accept() },
+                        onRedraw: { Task { await viewModel.redraw() } }
+                    )
+                }
             } else if let error = viewModel.error {
                 DrawErrorView(error: error, onDismiss: { viewModel.dismissError() })
             } else {
@@ -143,14 +158,6 @@ private struct EatContentView: View {
             }
 
             Spacer()
-
-            // 错误警告条
-            if viewModel.showingAllergenWarning {
-                AllergenWarningBanner(
-                    onAccept: { viewModel.accept() },
-                    onRedraw: { Task { await viewModel.redraw() } }
-                )
-            }
 
             // 主按钮
             PrimaryActionButton(
@@ -241,17 +248,31 @@ private struct PoolPickerView: View {
 
 private struct DrawResultView: View {
     let result: DrawResult
+    let isFavorite: Bool
+    let onToggleFavorite: () -> Void
 
     var body: some View {
         VStack(spacing: ThemeSpacing.md) {
             // 大占位（D140 v1 占位：色块 + 大 emoji + 菜名）
-            ZStack {
+            ZStack(alignment: .topTrailing) {
                 RoundedRectangle(cornerRadius: ThemeRadius.lg)
                     .fill(Color.theme.accentSubtle)
                     .frame(height: 240)
                     .shadow(color: .black.opacity(0.05), radius: ThemeShadow.md, x: 0, y: 2)
 
+                // 收藏按钮（⭐）
+                Button(action: onToggleFavorite) {
+                    Image(systemName: isFavorite ? "heart.fill" : "heart")
+                        .font(.title2)
+                        .foregroundStyle(isFavorite ? Color.theme.danger : Color.theme.textSecondary)
+                        .padding(ThemeSpacing.sm)
+                        .background(.ultraThinMaterial, in: Circle())
+                }
+                .accessibilityLabel(isFavorite ? "取消收藏" : "收藏")
+                .padding(ThemeSpacing.sm)
+
                 VStack(spacing: ThemeSpacing.md) {
+                    Spacer()
                     if let emoji = result.card.emoji {
                         Text(emoji)
                             .font(.system(size: 80))
@@ -264,6 +285,7 @@ private struct DrawResultView: View {
                         .font(Font.theme.title1)
                         .foregroundStyle(Color.theme.textPrimary)
                         .multilineTextAlignment(.center)
+                    Spacer()
                 }
                 .padding()
             }
@@ -275,9 +297,12 @@ private struct DrawResultView: View {
                 if !result.appliedFactors.isEmpty {
                     MetaPill(label: "应用因子", value: "\(result.appliedFactors.count)")
                 }
+                if let brand = result.card.brand {
+                    MetaPill(label: "品牌", value: brand)
+                }
             }
         }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
         .accessibilityLabel("抽签结果：\(result.card.title)")
     }
 }
