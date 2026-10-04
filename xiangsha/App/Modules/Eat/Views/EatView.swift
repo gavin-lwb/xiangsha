@@ -239,6 +239,17 @@ private struct EatContentView: View {
                         onRedraw: { Task { await viewModel.redraw() } }
                     )
                 }
+            } else if viewModel.showingNoDecisionPanel {
+                // D134 不决策模式面板
+                NoDecisionPanel(
+                    onAction: { action in
+                        switch action {
+                        case .skip: viewModel.performNoDecisionAction(.skip)
+                        case .changeCategory: viewModel.performNoDecisionAction(.changeCategory)
+                        case .decideMyself: viewModel.performNoDecisionAction(.decideMyself)
+                        }
+                    }
+                )
             } else if let error = viewModel.error {
                 DrawErrorView(error: error, onDismiss: { viewModel.dismissError() })
             } else {
@@ -596,6 +607,91 @@ private struct RatingFeedbackBubble: View {
         .padding(.horizontal)
         .transition(.move(edge: .top).combined(with: .opacity))
     }
+}
+
+// MARK: - D134 不决策模式面板
+
+private struct NoDecisionPanel: View {
+    let onAction: (NoDecisionAction) -> Void
+
+    var body: some View {
+        VStack(spacing: ThemeSpacing.md) {
+            Text("🦊")
+                .font(.system(size: 80))
+
+            Text("今天看起来都不太对胃口呢……")
+                .font(Font.theme.title3)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(Color.theme.textPrimary)
+
+            Text("要不要换个玩法？")
+                .font(Font.theme.body)
+                .foregroundStyle(Color.theme.textSecondary)
+
+            VStack(spacing: ThemeSpacing.sm) {
+                NoDecisionButton(
+                    emoji: "🛌",
+                    title: "算了，今天就不抽了",
+                    action: { onAction(.skip) }
+                )
+                NoDecisionButton(
+                    emoji: "🔄",
+                    title: "换到「\(eatOtherScene)」看看",
+                    action: { onAction(.changeCategory) }
+                )
+                NoDecisionButton(
+                    emoji: "💡",
+                    title: "我心里有答案",
+                    action: { onAction(.decideMyself) }
+                )
+            }
+            .padding(.top, ThemeSpacing.sm)
+        }
+        .padding(.horizontal, ThemeSpacing.xl)
+    }
+
+    private var eatOtherScene: String {
+        // 推荐切换到「玩啥」
+        "玩啥"
+    }
+}
+
+private struct NoDecisionButton: View {
+    let emoji: String
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: ThemeSpacing.sm) {
+                Text(emoji)
+                    .font(.title2)
+                Text(title)
+                    .font(Font.theme.body)
+                    .foregroundStyle(Color.theme.textPrimary)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.footnote)
+                    .foregroundStyle(Color.theme.textSecondary)
+            }
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(Color.theme.surface, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+            .overlay(
+                RoundedRectangle(cornerRadius: ThemeRadius.md)
+                    .stroke(Color.theme.border, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - NoDecisionAction 共享枚举
+
+enum NoDecisionAction {
+    case skip
+    case changeCategory
+    case decideMyself
 }
 
 private struct PrimaryActionButton: View {

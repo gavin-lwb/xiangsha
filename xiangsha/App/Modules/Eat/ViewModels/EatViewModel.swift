@@ -36,6 +36,12 @@ final class EatViewModel {
     /// 🦊 评分反馈文案（fox-persona §7.2）
     var ratingFeedback: String?
 
+    /// D134 连续无候选计数
+    var consecutiveNoCandidatesCount: Int = 0
+
+    /// D134 不决策模式是否显示
+    var showingNoDecisionPanel: Bool = false
+
     /// 注入 ModelContext（v1 简化：让 VM 直接写库）
     var modelContext: ModelContext?
 
@@ -60,6 +66,8 @@ final class EatViewModel {
     func draw() async {
         guard let pool = selectedPool ?? scene?.cardPools.first else {
             error = .invalidContext(reason: "无可用卡池")
+            recordNoCandidates()
+            checkNoDecisionTrigger()
             return
         }
 
@@ -76,6 +84,7 @@ final class EatViewModel {
         do {
             let result = try await engine.draw(context: context)
             lastResult = result
+            resetNoDecisionCounter()  // 成功抽到 → 重置
             // 检查 L2 过敏警告（fallbackLevel == .l2Allergen）
             if result.fallbackLevel == .l2Allergen {
                 showingAllergenWarning = true
@@ -140,6 +149,21 @@ final class EatViewModel {
         showingAllergenWarning = false
     }
 
+    /// D134 不决策模式触发判断（连续 L1 兜底 ≥ 3 次）
+    func shouldTriggerNoDecisionMode() -> Bool {
+        consecutiveNoCandidatesCount >= 3
+    }
+
+    /// 标记一次无候选（D134 累计）
+    func recordNoCandidates() {
+        consecutiveNoCandidatesCount += 1
+    }
+
+    /// 重置 D134 累计（成功抽到时）
+    func resetNoDecisionCounter() {
+        consecutiveNoCandidatesCount = 0
+    }
+
     /// D135 emoji 评分（用户主动评分）
     ///
     /// 评分逻辑：
@@ -195,9 +219,51 @@ final class EatViewModel {
 
     // MARK: - 私有
 
-    /// 兜底分类处理（D007）
+    /// 兜底分类处理（D007 + D134）
     private func handleFallback(_ engineError: DrawEngineError) {
-        // L1 兜底已在 draw() 中抛 noCandidates；这里只处理 invalidContext 等
+        switch engineError {
+        case .noCandidates:
+            recordNoCandidates()
+            checkNoDecisionTrigger()
+        case .invalidContext, .notImplemented:
+            break
+        }
+    }
+
+    /// D134 不决策模式触发检查
+    private func checkNoDecisionTrigger() {
+        if shouldTriggerNoDecisionMode() {
+            showingNoDecisionPanel = true
+        }
+    }
+
+    /// D134 三选项：跳过 / 改类别 / 自己决定
+    func performNoDecisionAction(_ action: NoDecisionAction) {
+        showingNoDecisionPanel = false
+        consecutiveNoCandidatesCount = 0
+        switch action {
+        case .skip:
+            // 🛌 跳过 — 直接关掉
+            error = nil
+        case .changeCategory:
+            // 🔄 改类别 — 自动切换到下一个卡池
+            switchToNextPool()
+        case .decideMyself:
+            // 💡 自己决定 — 让用户清空过敏原 / 加新卡
+            // v1 简化：显示 toast 提示"去设置看看"
+            error = .invalidContext(reason: "考虑去「设置 → 隐私」清空过敏原")
+        }
+    }
+
+    /// D134 切换到下一个卡池
+    private func switchToNextPool() {
+        guard let pools = scene?.cardPools, !pools.isEmpty else { return }
+        let currentID = selectedPool?.id
+        let next = pools.first { $0.id != currentID } ?? pools.first
+        if let next {
+            selectedPool = next
+            Task { await draw() }
+        }
     }
 
     /// 写 DrawRecord
