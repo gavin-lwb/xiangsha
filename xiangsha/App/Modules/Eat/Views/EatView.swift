@@ -41,6 +41,11 @@ struct EatView: View {
 
     @State private var pendingAchievements: [Achievement] = []
 
+    // MARK: - 天气（D137）
+
+    @StateObject private var weatherService = WeatherService.shared
+    @State private var weatherLoaded = false
+
     // MARK: - 跨场景联动回调（D121）
 
     let onLinkRequest: (Card) -> Void
@@ -60,6 +65,8 @@ struct EatView: View {
                         pools: scene.cardPools,
                         profile: profiles.first,
                         viewModel: viewModel,
+                        weather: weatherService.currentWeather,
+                        weatherText: WeatherService.recommendationText(for: weatherService.currentWeather),
                         onAcceptComplete: { checkAchievements() },
                         onFavoriteToggle: { checkAchievements() },
                         onLinkRequest: { card in
@@ -118,6 +125,13 @@ struct EatView: View {
         .sheet(isPresented: $showHistory) {
             HistoryView()
         }
+        .task {
+            // D137 天气感知（v1 stub：首次进入 Tab 拉一次）
+            if !weatherLoaded {
+                await weatherService.fetchCurrentWeather()
+                weatherLoaded = true
+            }
+        }
         .onAppear {
             viewModel.scene = eatScenes.first
             viewModel.selectedPool = eatScenes.first?.cardPools.first
@@ -159,6 +173,8 @@ private struct EatContentView: View {
     let pools: [CardPool]
     let profile: UserProfile?
     @Bindable var viewModel: EatViewModel
+    let weather: CurrentWeather?
+    let weatherText: String?
     let onAcceptComplete: () -> Void
     let onFavoriteToggle: () -> Void
     let onLinkRequest: (Card) -> Void
@@ -172,6 +188,9 @@ private struct EatContentView: View {
                 greeting: viewModel.greetingText
             )
             .padding(.top, ThemeSpacing.md)
+
+            // D137 天气 banner（🦊 推荐）
+            WeatherBanner(weather: weather, bodyText: weatherText)
 
             // 卡池选择器（如有多个）
             if pools.count > 1 {
