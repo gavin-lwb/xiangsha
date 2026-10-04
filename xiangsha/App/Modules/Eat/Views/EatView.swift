@@ -37,6 +37,10 @@ struct EatView: View {
     @State private var showFavorites: Bool = false
     @State private var showHistory: Bool = false
 
+    // MARK: - 成就解锁 Toast（D097）
+
+    @State private var pendingAchievements: [Achievement] = []
+
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
@@ -47,7 +51,9 @@ struct EatView: View {
                         scene: scene,
                         pools: scene.cardPools,
                         profile: profiles.first,
-                        viewModel: viewModel
+                        viewModel: viewModel,
+                        onAcceptComplete: { checkAchievements() },
+                        onFavoriteToggle: { checkAchievements() }
                     )
                 } else {
                     EmptyStateView(
@@ -86,6 +92,10 @@ struct EatView: View {
                     .accessibilityLabel("更多")
                 }
             }
+            .overlay(alignment: .top) {
+                CelebrationToastStack(pendingAchievements: $pendingAchievements)
+                    .padding(.top, ThemeSpacing.md)
+            }
         }
         .sheet(isPresented: $showSettings) {
             AppSettingsView()
@@ -97,7 +107,6 @@ struct EatView: View {
             HistoryView()
         }
         .onAppear {
-            // 初始化 ViewModel 数据
             viewModel.scene = eatScenes.first
             viewModel.selectedPool = eatScenes.first?.cardPools.first
             viewModel.modelContext = modelContext
@@ -111,6 +120,15 @@ struct EatView: View {
             }
         }
     }
+
+    /// D097 成就检查（accept / toggleFavorite 后调用）
+    private func checkAchievements() {
+        guard let profile = profiles.first else { return }
+        let unlocked = AchievementService.checkAndUnlock(context: modelContext, profile: profile)
+        if !unlocked.isEmpty {
+            pendingAchievements.append(contentsOf: unlocked)
+        }
+    }
 }
 
 // MARK: - 内容子视图（按场景拆开便于测试）
@@ -120,6 +138,8 @@ private struct EatContentView: View {
     let pools: [CardPool]
     let profile: UserProfile?
     @Bindable var viewModel: EatViewModel
+    let onAcceptComplete: () -> Void
+    let onFavoriteToggle: () -> Void
 
     var body: some View {
         VStack(spacing: ThemeSpacing.lg) {
@@ -144,6 +164,20 @@ private struct EatContentView: View {
                     onToggleFavorite: { viewModel.toggleFavorite() }
                 )
 
+                // D135 3 emoji 评分
+                EmojiRatingRow(
+                    currentRating: viewModel.currentRating,
+                    onRate: { emoji in viewModel.rate(emoji: emoji) }
+                )
+
+                // 评分反馈气泡
+                if let feedback = viewModel.ratingFeedback {
+                    RatingFeedbackBubble(
+                        text: feedback,
+                        onDismiss: { viewModel.clearRatingFeedback() }
+                    )
+                }
+
                 // L2 过敏警告 banner（D088）
                 if viewModel.showingAllergenWarning {
                     AllergenWarningBanner(
@@ -166,6 +200,7 @@ private struct EatContentView: View {
                 action: {
                     if viewModel.lastResult != nil {
                         viewModel.accept()
+                        onAcceptComplete()
                     } else {
                         Task { await viewModel.draw() }
                     }
@@ -423,6 +458,89 @@ private struct AllergenWarningBanner: View {
         }
         .padding()
         .background(Color.theme.warning.opacity(0.1), in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+    }
+}
+
+// MARK: - D135 3 emoji 评分
+
+private struct EmojiRatingRow: View {
+    let currentRating: EmojiRating?
+    let onRate: (EmojiRating) -> Void
+
+    var body: some View {
+        VStack(spacing: ThemeSpacing.xs) {
+            Text("怎么样，这次选得还行吗？")
+                .font(Font.theme.caption)
+                .foregroundStyle(Color.theme.textSecondary)
+
+            HStack(spacing: ThemeSpacing.md) {
+                ForEach(EmojiRating.allCases, id: \.self) { rating in
+                    EmojiRatingButton(
+                        rating: rating,
+                        isSelected: currentRating == rating,
+                        onTap: { onRate(rating) }
+                    )
+                }
+            }
+        }
+        .padding(.horizontal)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("评分")
+    }
+}
+
+private struct EmojiRatingButton: View {
+    let rating: EmojiRating
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            Text(rating.rawValue)
+                .font(.system(size: 40))
+                .padding(ThemeSpacing.xs)
+                .background(
+                    isSelected ? Color.theme.accentSubtle : Color.clear,
+                    in: Circle()
+                )
+                .scaleEffect(isSelected ? 1.15 : 1.0)
+                .animation(.spring(response: 0.3), value: isSelected)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private var accessibilityLabel: String {
+        switch rating {
+        case .like: return "喜欢"
+        case .neutral: return "一般"
+        case .dislike: return "不喜欢"
+        }
+    }
+}
+
+private struct RatingFeedbackBubble: View {
+    let text: String
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack {
+            Image(systemName: "bubble.left.fill")
+                .foregroundStyle(Color.theme.accent)
+            Text(text)
+                .font(Font.theme.callout)
+                .foregroundStyle(Color.theme.textPrimary)
+            Spacer()
+            Button(action: onDismiss) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(Color.theme.textSecondary)
+            }
+        }
+        .padding()
+        .background(Color.theme.accentSubtle, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+        .padding(.horizontal)
+        .transition(.move(edge: .top).combined(with: .opacity))
     }
 }
 
