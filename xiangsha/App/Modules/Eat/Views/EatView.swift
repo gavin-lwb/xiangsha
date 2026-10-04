@@ -41,7 +41,15 @@ struct EatView: View {
 
     @State private var pendingAchievements: [Achievement] = []
 
+    // MARK: - 跨场景联动回调（D121）
+
+    let onLinkRequest: (Card) -> Void
+
     @Environment(\.modelContext) private var modelContext
+
+    init(onLinkRequest: @escaping (Card) -> Void = { _ in }) {
+        self.onLinkRequest = onLinkRequest
+    }
 
     var body: some View {
         NavigationStack {
@@ -53,7 +61,11 @@ struct EatView: View {
                         profile: profiles.first,
                         viewModel: viewModel,
                         onAcceptComplete: { checkAchievements() },
-                        onFavoriteToggle: { checkAchievements() }
+                        onFavoriteToggle: { checkAchievements() },
+                        onLinkRequest: { card in
+                            // 跨场景联动：推荐玩啥
+                            requestLink(to: .play, card: card)
+                        }
                     )
                 } else {
                     EmptyStateView(
@@ -129,6 +141,15 @@ struct EatView: View {
             pendingAchievements.append(contentsOf: unlocked)
         }
     }
+
+    /// D121 跨场景联动请求
+    private func requestLink(to target: DecisionSceneType, card: Card) {
+        if let recommend = CrossSceneLinkService.recommendCard(target: target, context: modelContext) {
+            onLinkRequest(recommend)
+        } else {
+            onLinkRequest(card) // fallback
+        }
+    }
 }
 
 // MARK: - 内容子视图（按场景拆开便于测试）
@@ -140,6 +161,7 @@ private struct EatContentView: View {
     @Bindable var viewModel: EatViewModel
     let onAcceptComplete: () -> Void
     let onFavoriteToggle: () -> Void
+    let onLinkRequest: (Card) -> Void
 
     var body: some View {
         VStack(spacing: ThemeSpacing.lg) {
@@ -175,6 +197,19 @@ private struct EatContentView: View {
                     RatingFeedbackBubble(
                         text: feedback,
                         onDismiss: { viewModel.clearRatingFeedback() }
+                    )
+                }
+
+                // D121 跨场景联动 banner
+                if let target = CrossSceneLinkService.recommendedTarget(for: .eat),
+                   let context = viewModel.modelContext,
+                   let recommend = CrossSceneLinkService.recommendCard(target: target, context: context) {
+                    CrossSceneBanner(
+                        sourceScene: .eat,
+                        targetScene: target,
+                        suggestedCardTitle: recommend.title,
+                        suggestedCardEmoji: recommend.emoji,
+                        onTap: { onLinkRequest(recommend) }
                     )
                 }
 

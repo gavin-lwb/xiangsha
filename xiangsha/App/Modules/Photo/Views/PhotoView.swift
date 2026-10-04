@@ -21,6 +21,12 @@ struct PhotoView: View {
     @State private var pendingAchievements: [Achievement] = []
     @Environment(\.modelContext) private var modelContext
 
+    let onLinkRequest: (Card) -> Void
+
+    init(onLinkRequest: @escaping (Card) -> Void = { _ in }) {
+        self.onLinkRequest = onLinkRequest
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -31,7 +37,10 @@ struct PhotoView: View {
                         profile: profiles.first,
                         viewModel: viewModel,
                         onAcceptComplete: { checkAchievements() },
-                        onFavoriteToggle: { checkAchievements() }
+                        onFavoriteToggle: { checkAchievements() },
+                        onLinkRequest: { card in
+                            requestLink(to: .play, card: card)
+                        }
                     )
                 } else {
                     PlaceholderTabView(sceneType: .photo)
@@ -67,6 +76,14 @@ struct PhotoView: View {
             pendingAchievements.append(contentsOf: unlocked)
         }
     }
+
+    private func requestLink(to target: DecisionSceneType, card: Card) {
+        if let recommend = CrossSceneLinkService.recommendCard(target: target, context: modelContext) {
+            onLinkRequest(recommend)
+        } else {
+            onLinkRequest(card)
+        }
+    }
 }
 
 private struct PhotoContentView: View {
@@ -76,6 +93,7 @@ private struct PhotoContentView: View {
     @Bindable var viewModel: PhotoViewModel
     let onAcceptComplete: () -> Void
     let onFavoriteToggle: () -> Void
+    let onLinkRequest: (Card) -> Void
 
     var body: some View {
         VStack(spacing: ThemeSpacing.lg) {
@@ -103,6 +121,19 @@ private struct PhotoContentView: View {
                 )
                 if let feedback = viewModel.ratingFeedback {
                     PhotoFeedbackBubble(text: feedback, onDismiss: { viewModel.clearRatingFeedback() })
+                }
+
+                // D121 跨场景联动 banner
+                if let target = CrossSceneLinkService.recommendedTarget(for: .photo),
+                   let context = viewModel.modelContext,
+                   let recommend = CrossSceneLinkService.recommendCard(target: target, context: context) {
+                    CrossSceneBanner(
+                        sourceScene: .photo,
+                        targetScene: target,
+                        suggestedCardTitle: recommend.title,
+                        suggestedCardEmoji: recommend.emoji,
+                        onTap: { onLinkRequest(recommend) }
+                    )
                 }
             } else if let error = viewModel.error {
                 PhotoDrawErrorView(error: error, onDismiss: { viewModel.dismissError() })

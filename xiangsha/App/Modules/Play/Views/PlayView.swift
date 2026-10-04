@@ -21,6 +21,12 @@ struct PlayView: View {
     @State private var pendingAchievements: [Achievement] = []
     @Environment(\.modelContext) private var modelContext
 
+    let onLinkRequest: (Card) -> Void
+
+    init(onLinkRequest: @escaping (Card) -> Void = { _ in }) {
+        self.onLinkRequest = onLinkRequest
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -31,7 +37,11 @@ struct PlayView: View {
                         profile: profiles.first,
                         viewModel: viewModel,
                         onAcceptComplete: { checkAchievements() },
-                        onFavoriteToggle: { checkAchievements() }
+                        onFavoriteToggle: { checkAchievements() },
+                        onLinkRequest: { card in
+                            // 跨场景联动：推荐拍啥
+                            requestLink(to: .photo, card: card)
+                        }
                     )
                 } else {
                     PlaceholderTabView(sceneType: .play)
@@ -67,6 +77,14 @@ struct PlayView: View {
             pendingAchievements.append(contentsOf: unlocked)
         }
     }
+
+    private func requestLink(to target: DecisionSceneType, card: Card) {
+        if let recommend = CrossSceneLinkService.recommendCard(target: target, context: modelContext) {
+            onLinkRequest(recommend)
+        } else {
+            onLinkRequest(card)
+        }
+    }
 }
 
 private struct PlayContentView: View {
@@ -76,6 +94,7 @@ private struct PlayContentView: View {
     @Bindable var viewModel: PlayViewModel
     let onAcceptComplete: () -> Void
     let onFavoriteToggle: () -> Void
+    let onLinkRequest: (Card) -> Void
 
     var body: some View {
         VStack(spacing: ThemeSpacing.lg) {
@@ -107,6 +126,19 @@ private struct PlayContentView: View {
                 )
                 if let feedback = viewModel.ratingFeedback {
                     PlayFeedbackBubble(text: feedback, onDismiss: { viewModel.clearRatingFeedback() })
+                }
+
+                // D121 跨场景联动 banner
+                if let target = CrossSceneLinkService.recommendedTarget(for: .play),
+                   let context = viewModel.modelContext,
+                   let recommend = CrossSceneLinkService.recommendCard(target: target, context: context) {
+                    CrossSceneBanner(
+                        sourceScene: .play,
+                        targetScene: target,
+                        suggestedCardTitle: recommend.title,
+                        suggestedCardEmoji: recommend.emoji,
+                        onTap: { onLinkRequest(recommend) }
+                    )
                 }
             } else if let error = viewModel.error {
                 PlayDrawErrorView(error: error, onDismiss: { viewModel.dismissError() })

@@ -21,6 +21,12 @@ struct DoView: View {
     @State private var pendingAchievements: [Achievement] = []
     @Environment(\.modelContext) private var modelContext
 
+    let onLinkRequest: (Card) -> Void
+
+    init(onLinkRequest: @escaping (Card) -> Void = { _ in }) {
+        self.onLinkRequest = onLinkRequest
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -30,7 +36,10 @@ struct DoView: View {
                         pools: scene.cardPools,
                         profile: profiles.first,
                         viewModel: viewModel,
-                        onAcceptComplete: { checkAchievements() }
+                        onAcceptComplete: { checkAchievements() },
+                        onLinkRequest: { card in
+                            requestLink(to: .eat, card: card)
+                        }
                     )
                 } else {
                     PlaceholderTabView(sceneType: .task)
@@ -66,6 +75,14 @@ struct DoView: View {
             pendingAchievements.append(contentsOf: unlocked)
         }
     }
+
+    private func requestLink(to target: DecisionSceneType, card: Card) {
+        if let recommend = CrossSceneLinkService.recommendCard(target: target, context: modelContext) {
+            onLinkRequest(recommend)
+        } else {
+            onLinkRequest(card)
+        }
+    }
 }
 
 private struct DoContentView: View {
@@ -74,6 +91,7 @@ private struct DoContentView: View {
     let profile: UserProfile?
     @Bindable var viewModel: DoViewModel
     let onAcceptComplete: () -> Void
+    let onLinkRequest: (Card) -> Void
 
     var body: some View {
         VStack(spacing: ThemeSpacing.lg) {
@@ -93,6 +111,19 @@ private struct DoContentView: View {
 
             if let result = viewModel.lastResult {
                 DoDrawResultView(result: result, celebrationText: viewModel.celebrationText)
+
+                // D121 跨场景联动 banner（做啥 → 吃啥犒劳）
+                if let target = CrossSceneLinkService.recommendedTarget(for: .task),
+                   let context = viewModel.modelContext,
+                   let recommend = CrossSceneLinkService.recommendCard(target: target, context: context) {
+                    CrossSceneBanner(
+                        sourceScene: .task,
+                        targetScene: target,
+                        suggestedCardTitle: recommend.title,
+                        suggestedCardEmoji: recommend.emoji,
+                        onTap: { onLinkRequest(recommend) }
+                    )
+                }
             } else if let error = viewModel.error {
                 DoDrawErrorView(error: error, onDismiss: { viewModel.dismissError() })
             } else {
