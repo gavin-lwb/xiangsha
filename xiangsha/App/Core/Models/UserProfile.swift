@@ -100,3 +100,47 @@ extension UserProfile {
         allergens.contains(UserProfile.noAllergenSentinel) || allergens.isEmpty
     }
 }
+
+// MARK: - D132 慢节奏重置（跨午夜逻辑）
+
+extension UserProfile {
+    /// D132 检查是否需要重置 drawsToday（跨午夜 / 时区切换 / 时钟回拨）
+    ///
+    /// 规则：
+    /// - lastDrawDate 为空 → 不需要重置（首次启动）
+    /// - 当前 Calendar.startOfDay > lastDrawDate 的 startOfDay → 重置
+    /// - 时钟回拨（now < lastDrawDate）→ 重置（保守策略）
+    static func shouldResetDrawsToday(
+        lastDrawDate: Date?,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> Bool {
+        guard let lastDrawDate else { return false }
+
+        let nowStart = calendar.startOfDay(for: now)
+        let lastStart = calendar.startOfDay(for: lastDrawDate)
+
+        // 跨午夜
+        if nowStart > lastStart { return true }
+
+        // 时钟回拨
+        if now < lastDrawDate { return true }
+
+        return false
+    }
+
+    /// D132 慢节奏重置（业务封装）
+    ///
+    /// - 重置 drawsToday = 0
+    /// - 更新 lastDrawDate = nil / lastResetDate = now
+    /// - 自动持久化（如果 modelContext 注入）
+    mutating func resetDailyDrawCount(modelContext: ModelContext? = nil) {
+        self.drawsToday = 0
+        self.lastDrawDate = nil
+        self.lastResetDate = Date()
+        self.updatedAt = Date()
+        if let modelContext {
+            try? modelContext.save()
+        }
+    }
+}
