@@ -26,6 +26,8 @@ struct AppSettingsView: View {
     @State private var debugTapCount: Int = 0
     @State private var showAllergenEditor: Bool = false
 
+    private static let debugUnlockTapsRequired: Int = 5
+
     var body: some View {
         NavigationStack {
             List {
@@ -122,12 +124,23 @@ struct AppSettingsView: View {
 
     private var aboutSection: some View {
         Section {
+            // 版本行（D099 5-tap 解锁入口）
             HStack {
                 Text("版本")
                 Spacer()
                 Text(versionString)
                     .font(Font.theme.callout)
                     .foregroundStyle(Color.theme.textSecondary)
+                if debugTapCount > 0 && debugTapCount < Self.debugUnlockTapsRequired {
+                    Text("再点 \(Self.debugUnlockTapsRequired - debugTapCount) 下")
+                        .font(Font.theme.caption2)
+                        .foregroundStyle(Color.theme.warning)
+                        .padding(.leading, ThemeSpacing.xs)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                handleVersionTap()
             }
             HStack {
                 Text("小狐狸🦊")
@@ -184,6 +197,18 @@ struct AppSettingsView: View {
         let version = bundle.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         let build = bundle.infoDictionary?["CFBundleVersion"] as? String ?? "1"
         return "v\(version) (\(build))"
+    }
+
+    /// D099 5-tap 解锁：连续点击版本行 5 次开启 DEBUG 模式
+    private func handleVersionTap() {
+        debugTapCount += 1
+        guard debugTapCount >= Self.debugUnlockTapsRequired,
+              let profile = profiles.first else { return }
+
+        profile.debugModeEnabled = true
+        profile.updatedAt = Date()
+        try? modelContext.save()
+        debugTapCount = 0 // 重置，下次再点
     }
 }
 
