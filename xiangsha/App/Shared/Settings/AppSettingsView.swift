@@ -166,6 +166,8 @@ struct AppSettingsView: View {
 
     // MARK: - DEBUG（D099 5-tap 解锁）
 
+    @State private var showDebugPanel: Bool = false
+
     @ViewBuilder
     private var debugSection: some View {
         if let profile = profiles.first, profile.debugModeEnabled {
@@ -179,11 +181,19 @@ struct AppSettingsView: View {
                     }
                 ))
                 .tint(Color.theme.warning)
+                Button {
+                    showDebugPanel = true
+                } label: {
+                    Label("打开 DEBUG 面板", systemImage: "wrench.and.screwdriver.fill")
+                }
             } header: {
                 Text("DEBUG")
             } footer: {
                 Text("D099：仅 DEBUG 构建可见，release 无痕迹")
                     .font(Font.theme.caption)
+            }
+            .sheet(isPresented: $showDebugPanel) {
+                DebugPanelView()
             }
         } else {
             // 隐藏入口：连续点 5 下版本行解锁（D099）
