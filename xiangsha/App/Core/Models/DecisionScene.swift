@@ -37,6 +37,13 @@ final class DecisionScene {
     /// 显示排序权重（数值越小越靠前；Tab 顺序由其决定）
     var sortOrder: Int
 
+    /// 该场景下的卡池列表（1 → n CardPool）
+    ///
+    /// - 级联策略：`.cascade` — 场景删除时，所有 CardPool 一起删（SPEC §10.3）
+    /// - 关系由 SwiftData 自动推断双向，无需在 CardPool 显式声明 inverse
+    @Relationship(deleteRule: .cascade)
+    var cardPools: [CardPool] = []
+
     init(type: DecisionSceneType, sortOrder: Int = 0) {
         self.id = UUID()
         self.typeRaw = type.rawValue
@@ -51,6 +58,8 @@ final class DecisionScene {
         DecisionSceneType(rawValue: typeRaw) ?? .eat
     }
 }
+
+// 注：CardPool 类型在 CardPool.swift 中定义，SwiftData 双向关系由框架在编译期自动处理。
 
 /// 决策场景类型（D004 + SPEC §10.1）
 ///
