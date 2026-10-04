@@ -16,6 +16,7 @@ struct xiangshaApp: App {
 
     init() {
         // 注册 Schema（SPEC §10.5 v1_0 modelsForSchema）
+        // D138：使用 VersionedSchema + SchemaMigrationPlan
         let schema = Schema([
             DecisionScene.self,
             CardPool.self,
@@ -31,6 +32,7 @@ struct xiangshaApp: App {
         do {
             self.container = try ModelContainer(
                 for: schema,
+                migrationPlan: xiangshaMigrationPlan.self,
                 configurations: [modelConfig]
             )
         } catch {
@@ -39,6 +41,7 @@ struct xiangshaApp: App {
             // swiftlint:disable:next force_try
             self.container = try! ModelContainer(
                 for: schema,
+                migrationPlan: xiangshaMigrationPlan.self,
                 configurations: [fallbackConfig]
             )
         }
