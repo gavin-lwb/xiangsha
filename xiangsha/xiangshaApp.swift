@@ -48,6 +48,9 @@ struct xiangshaApp: App {
         let containerRef = container
         Task { @MainActor in
             let context = containerRef.mainContext
+            // M0 lite 首次启动播种（SeedService 内部用 UserProfile 存在与否判断）
+            SeedService.seedIfNeeded(context: context)
+            // D133 预热 fetch
             _ = try? context.fetch(FetchDescriptor<DecisionScene>())
             _ = try? context.fetch(FetchDescriptor<UserProfile>())
         }
