@@ -31,6 +31,12 @@ struct EatView: View {
 
     @State private var viewModel: EatViewModel = .init()
 
+    // MARK: - 弹出页面状态
+
+    @State private var showSettings: Bool = false
+    @State private var showFavorites: Bool = false
+    @State private var showHistory: Bool = false
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -54,12 +60,39 @@ struct EatView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {}) {
-                        Image(systemName: "clock.arrow.circlepath")
+                    Menu {
+                        Button {
+                            showHistory = true
+                        } label: {
+                            Label("历史", systemImage: "clock.arrow.circlepath")
+                        }
+                        Button {
+                            showFavorites = true
+                        } label: {
+                            Label("收藏", systemImage: "heart.fill")
+                        }
+                        Divider()
+                        Button {
+                            showSettings = true
+                        } label: {
+                            Label("设置", systemImage: "gearshape.fill")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .foregroundStyle(Color.theme.accent)
                     }
-                    .accessibilityLabel("历史")
+                    .accessibilityLabel("更多")
                 }
             }
+        }
+        .sheet(isPresented: $showSettings) {
+            AppSettingsView()
+        }
+        .sheet(isPresented: $showFavorites) {
+            FavoritesView()
+        }
+        .sheet(isPresented: $showHistory) {
+            HistoryView()
         }
         .onAppear {
             // 初始化 ViewModel 数据
