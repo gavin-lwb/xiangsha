@@ -43,6 +43,13 @@ final class CardPool {
     /// DecisionScene 删除时本卡池被 `.cascade` 一起删除（SPEC §10.3）。
     var scene: DecisionScene?
 
+    /// 该卡池下的所有卡片（1 → n）
+    ///
+    /// - 级联策略：`.nullify` — 卡池删除时卡片保留为「未分类」（SPEC §10.3）
+    /// - 关系由 SwiftData 通过 `inverse: \Card.pool` 自动配对
+    @Relationship(deleteRule: .nullify, inverse: \Card.pool)
+    var cards: [Card] = []
+
     init(
         name: String,
         icon: String = "rectangle.stack",
