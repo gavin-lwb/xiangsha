@@ -54,6 +54,9 @@ final class UserProfile {
     /// Debug 模式启用（D099 5-tap 解锁后开启）
     var debugModeEnabled: Bool
 
+    /// D097 已解锁的成就 ID 列表（首次抽签 / 首次收藏 / 首次完成做啥）
+    var earnedAchievements: [String]
+
     init(
         allergens: [String] = [],
         preferredStyles: [String] = [],
@@ -72,6 +75,7 @@ final class UserProfile {
         self.createdAt = now
         self.updatedAt = now
         self.debugModeEnabled = false
+        self.earnedAchievements = []
     }
 
     /// 检查是否包含指定过敏原

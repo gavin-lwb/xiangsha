@@ -30,6 +30,12 @@ final class EatViewModel {
     /// 当前抽到的卡片是否已收藏
     var isCurrentFavorite: Bool = false
 
+    /// D135 emoji 评分状态：用户对当前抽到的卡的评分
+    var currentRating: EmojiRating?
+
+    /// 🦊 评分反馈文案（fox-persona §7.2）
+    var ratingFeedback: String?
+
     /// 注入 ModelContext（v1 简化：让 VM 直接写库）
     var modelContext: ModelContext?
 
@@ -134,6 +140,59 @@ final class EatViewModel {
         showingAllergenWarning = false
     }
 
+    /// D135 emoji 评分（用户主动评分）
+    ///
+    /// 评分逻辑：
+    /// - 😋 → 写 DrawRecord(.accept, emojiRating: .like) + 更新 card 偏好权重
+    /// - 😐 → 写 DrawRecord(.accept, emojiRating: .neutral)
+    /// - 🙅 → 写 DrawRecord(.reject, emojiRating: .dislike) + 设 7d excludeUntil
+    func rate(emoji: EmojiRating) {
+        guard let result = lastResult, let modelContext else { return }
+        currentRating = emoji
+        ratingFeedback = emoji.feedbackText
+
+        let cardID = result.card.id
+        let cardDescriptor = FetchDescriptor<Card>(predicate: #Predicate { $0.id == cardID })
+        guard let card = (try? modelContext.fetch(cardDescriptor))?.first else { return }
+
+        switch emoji {
+        case .like:
+            // 喜欢 → 更新偏好 + 写 accept + DrawRecord
+            recordDraw(result: result, action: .accept, emojiRating: emoji)
+            updateCardPreference(card: card, liked: true)
+
+        case .neutral:
+            // 一般 → 写 accept
+            recordDraw(result: result, action: .accept, emojiRating: emoji)
+
+        case .dislike:
+            // 不喜欢 → 写 reject + 7d excludeUntil + dislike flag
+            recordDraw(result: result, action: .reject, emojiRating: emoji)
+            setExcludeUntil(cardID: cardID, hours: 24 * 7) // 7d
+            updateCardPreference(card: card, liked: false)
+        }
+
+        try? modelContext.save()
+    }
+
+    /// 清除评分反馈（用户读完反馈后）
+    func clearRatingFeedback() {
+        ratingFeedback = nil
+        currentRating = nil
+    }
+
+    /// 更新 Card 偏好（D135 数据闭环）
+    private func updateCardPreference(card: Card, liked: Bool) {
+        var meta = card.metadata ?? [:]
+        let key = "preferenceScore"
+        let current = Double(meta[key] ?? "1.0") ?? 1.0
+        // 简单累加：每次喜欢 +0.3，每次不喜欢 -0.3，clamp 到 [0.1, 2.0]
+        let newScore = max(0.1, min(2.0, current + (liked ? 0.3 : -0.3)))
+        meta[key] = String(format: "%.2f", newScore)
+        card.metadata = meta
+        card.updatedAt = Date()
+    }
+
     // MARK: - 私有
 
     /// 兜底分类处理（D007）
@@ -142,7 +201,7 @@ final class EatViewModel {
     }
 
     /// 写 DrawRecord
-    private func recordDraw(result: DrawResult, action: DrawAction) {
+    private func recordDraw(result: DrawResult, action: DrawAction, emojiRating: EmojiRating? = nil) {
         guard let modelContext else { return }
         let cardID = result.card.id
         let cardDescriptor = FetchDescriptor<Card>(predicate: #Predicate { $0.id == cardID })
@@ -156,7 +215,8 @@ final class EatViewModel {
             fallbackUsed: result.fallbackUsed,
             fallbackLevel: result.fallbackLevel,
             timeOfDay: TimeOfDay.from(),
-            drawsTodayAtTime: userProfileSnapshot.drawsToday
+            drawsTodayAtTime: userProfileSnapshot.drawsToday,
+            emojiRating: emojiRating
         )
         modelContext.insert(record)
         try? modelContext.save()

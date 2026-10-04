@@ -32,6 +32,9 @@ final class DrawRecord {
     /// 用户对抽签结果采取的动作（accept / reject / redraw / skip）
     var actionRaw: String
 
+    /// D135 3 emoji 评分（😋/😐/🙅），可空
+    var emojiRating: String?
+
     /// 抽签结果分析：候选前的卡池总数
     var candidatesBeforeFilter: Int
 
@@ -63,13 +66,15 @@ final class DrawRecord {
         fallbackUsed: Bool = false,
         fallbackLevel: FallbackLevel? = nil,
         timeOfDay: TimeOfDay? = nil,
-        drawsTodayAtTime: Int = 0
+        drawsTodayAtTime: Int = 0,
+        emojiRating: EmojiRating? = nil
     ) {
         self.id = UUID()
         self.cardID = card.id
         self.sceneID = card.scene?.id ?? UUID()
         self.createdAt = Date()
         self.actionRaw = action.rawValue
+        self.emojiRating = emojiRating?.rawValue
         self.candidatesBeforeFilter = candidatesBeforeFilter
         self.candidatesAfterFilter = candidatesAfterFilter
         self.fallbackUsed = fallbackUsed
@@ -84,6 +89,11 @@ final class DrawRecord {
         DrawAction(rawValue: actionRaw) ?? .redraw
     }
 
+    /// 计算属性：强类型 emoji 评分
+    var rating: EmojiRating? {
+        emojiRating.flatMap(EmojiRating.init(rawValue:))
+    }
+
     /// 计算属性：强类型兜底等级
     var fallbackLevel: FallbackLevel? {
         fallbackLevelRaw.flatMap(FallbackLevel.init(rawValue:))
@@ -92,6 +102,34 @@ final class DrawRecord {
     /// 计算属性：强类型时段
     var timeOfDay: TimeOfDay? {
         timeOfDayRaw.flatMap(TimeOfDay.init(rawValue:))
+    }
+}
+
+/// D135 3 emoji 评分枚举
+enum EmojiRating: String, CaseIterable, Codable {
+    /// 😋 喜欢（×1.5 加权）
+    case like = "😋"
+    /// 😐 一般（×1.0 无加权）
+    case neutral = "😐"
+    /// 🙅 不喜欢（×0.3 + dislike flag → 7d 内不再抽）
+    case dislike = "🙅"
+
+    /// 评分对应的引擎权重乘数
+    var engineWeightMultiplier: Double {
+        switch self {
+        case .like: return 1.5
+        case .neutral: return 1.0
+        case .dislike: return 0.3
+        }
+    }
+
+    /// 🦊 反馈文案（fox-persona §7.2）
+    var feedbackText: String {
+        switch self {
+        case .like: return "记下来啦，下次多给你推 😋"
+        case .neutral: return "收到，继续找找你的心头好"
+        case .dislike: return "抱歉，下次小狐狸多注意"
+        }
     }
 }
 
