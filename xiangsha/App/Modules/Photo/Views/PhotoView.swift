@@ -18,12 +18,21 @@ struct PhotoView: View {
     private var profiles: [UserProfile]
 
     @State private var viewModel = PhotoViewModel()
+    @State private var pendingAchievements: [Achievement] = []
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 if let scene = photoScenes.first {
-                    PhotoContentView(scene: scene, pools: scene.cardPools, profile: profiles.first, viewModel: viewModel)
+                    PhotoContentView(
+                        scene: scene,
+                        pools: scene.cardPools,
+                        profile: profiles.first,
+                        viewModel: viewModel,
+                        onAcceptComplete: { checkAchievements() },
+                        onFavoriteToggle: { checkAchievements() }
+                    )
                 } else {
                     PlaceholderTabView(sceneType: .photo)
                 }
@@ -31,10 +40,15 @@ struct PhotoView: View {
             .background(Color.theme.background)
             .navigationTitle(DecisionSceneType.photo.title)
             .navigationBarTitleDisplayMode(.large)
+            .overlay(alignment: .top) {
+                CelebrationToastStack(pendingAchievements: $pendingAchievements)
+                    .padding(.top, ThemeSpacing.md)
+            }
         }
         .onAppear {
             viewModel.scene = photoScenes.first
             viewModel.selectedPool = photoScenes.first?.cardPools.first
+            viewModel.modelContext = modelContext
             if let profile = profiles.first {
                 viewModel.userProfileSnapshot = UserProfileSnapshot(
                     from: profile,
@@ -45,6 +59,14 @@ struct PhotoView: View {
             }
         }
     }
+
+    private func checkAchievements() {
+        guard let profile = profiles.first else { return }
+        let unlocked = AchievementService.checkAndUnlock(context: modelContext, profile: profile)
+        if !unlocked.isEmpty {
+            pendingAchievements.append(contentsOf: unlocked)
+        }
+    }
 }
 
 private struct PhotoContentView: View {
@@ -52,6 +74,8 @@ private struct PhotoContentView: View {
     let pools: [CardPool]
     let profile: UserProfile?
     @Bindable var viewModel: PhotoViewModel
+    let onAcceptComplete: () -> Void
+    let onFavoriteToggle: () -> Void
 
     var body: some View {
         VStack(spacing: ThemeSpacing.lg) {
@@ -60,11 +84,26 @@ private struct PhotoContentView: View {
                 Text(viewModel.greetingText)
                     .font(Font.theme.title3)
                     .foregroundStyle(Color.theme.textPrimary)
+                    .multilineTextAlignment(.center)
             }
             .padding(.top, ThemeSpacing.md)
 
             if let result = viewModel.lastResult {
-                PhotoDrawResultView(result: result)
+                PhotoDrawResultView(
+                    result: result,
+                    isFavorite: viewModel.isCurrentFavorite,
+                    onToggleFavorite: {
+                        viewModel.toggleFavorite()
+                        onFavoriteToggle()
+                    }
+                )
+                PhotoEmojiRatingRow(
+                    currentRating: viewModel.currentRating,
+                    onRate: { viewModel.rate(emoji: $0) }
+                )
+                if let feedback = viewModel.ratingFeedback {
+                    PhotoFeedbackBubble(text: feedback, onDismiss: { viewModel.clearRatingFeedback() })
+                }
             } else if let error = viewModel.error {
                 PhotoDrawErrorView(error: error, onDismiss: { viewModel.dismissError() })
             } else {
@@ -76,6 +115,7 @@ private struct PhotoContentView: View {
             Button(action: {
                 if viewModel.lastResult != nil {
                     viewModel.accept()
+                    onAcceptComplete()
                 } else {
                     Task { await viewModel.draw() }
                 }
@@ -94,8 +134,8 @@ private struct PhotoContentView: View {
 
             if viewModel.showsSecondaryActions {
                 HStack(spacing: ThemeSpacing.md) {
-                    SecondaryPhotoButton(title: "换姿势 🔁", action: { Task { await viewModel.redraw() } })
-                    SecondaryPhotoButton(title: "算了", action: { viewModel.reject() })
+                    PhotoSecondaryButton(title: "换姿势 🔁", action: { Task { await viewModel.redraw() } })
+                    PhotoSecondaryButton(title: "算了", action: { viewModel.reject() })
                 }
                 .padding(.horizontal)
             }
@@ -107,10 +147,12 @@ private struct PhotoContentView: View {
 
 private struct PhotoDrawResultView: View {
     let result: DrawResult
+    let isFavorite: Bool
+    let onToggleFavorite: () -> Void
 
     var body: some View {
         VStack(spacing: ThemeSpacing.md) {
-            ZStack {
+            ZStack(alignment: .topTrailing) {
                 RoundedRectangle(cornerRadius: ThemeRadius.lg)
                     .fill(LinearGradient(
                         colors: [Color.theme.accentSubtle, Color.theme.accent.opacity(0.2)],
@@ -120,24 +162,33 @@ private struct PhotoDrawResultView: View {
                     .frame(height: 360)
                     .shadow(color: .black.opacity(0.05), radius: ThemeShadow.md)
 
-                VStack(spacing: ThemeSpacing.md) {
-                    Text(result.card.emoji ?? "📸").font(.system(size: 96))
+                Button(action: onToggleFavorite) {
+                    Image(systemName: isFavorite ? "heart.fill" : "heart")
+                        .font(.title2)
+                        .foregroundStyle(isFavorite ? Color.theme.danger : Color.theme.textSecondary)
+                        .padding(ThemeSpacing.sm)
+                        .background(.ultraThinMaterial, in: Circle())
+                }
+                .padding(ThemeSpacing.sm)
 
+                VStack(spacing: ThemeSpacing.md) {
+                    Spacer()
+                    Text(result.card.emoji ?? "📸").font(.system(size: 96))
                     Text(result.card.title)
                         .font(Font.theme.title1)
                         .multilineTextAlignment(.center)
                         .foregroundStyle(Color.theme.textPrimary)
-
                     if let category = result.card.category {
                         Text("·\(category)·")
                             .font(Font.theme.caption)
                             .foregroundStyle(Color.theme.textSecondary)
                     }
+                    Spacer()
                 }
                 .padding()
             }
             .padding(.horizontal)
-            .accessibilityElement(children: .combine)
+            .accessibilityElement(children: .contain)
             .accessibilityLabel("拍啥姿势：\(result.card.title)")
         }
     }
@@ -177,7 +228,7 @@ private struct PhotoEmptyStateView: View {
     }
 }
 
-private struct SecondaryPhotoButton: View {
+private struct PhotoSecondaryButton: View {
     let title: String
     let action: () -> Void
 
@@ -190,6 +241,56 @@ private struct SecondaryPhotoButton: View {
                 .background(Color.theme.surface, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
                 .foregroundStyle(Color.theme.textPrimary)
         }
+    }
+}
+
+private struct PhotoEmojiRatingRow: View {
+    let currentRating: EmojiRating?
+    let onRate: (EmojiRating) -> Void
+
+    var body: some View {
+        VStack(spacing: ThemeSpacing.xs) {
+            Text("想拍吗？")
+                .font(Font.theme.caption)
+                .foregroundStyle(Color.theme.textSecondary)
+            HStack(spacing: ThemeSpacing.md) {
+                ForEach(EmojiRating.allCases, id: \.self) { rating in
+                    Button(action: { onRate(rating) }) {
+                        Text(rating.rawValue)
+                            .font(.system(size: 36))
+                            .padding(ThemeSpacing.xs)
+                            .background(
+                                currentRating == rating ? Color.theme.accentSubtle : Color.clear,
+                                in: Circle()
+                            )
+                            .scaleEffect(currentRating == rating ? 1.15 : 1.0)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+}
+
+private struct PhotoFeedbackBubble: View {
+    let text: String
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack {
+            Image(systemName: "bubble.left.fill")
+                .foregroundStyle(Color.theme.accent)
+            Text(text).font(Font.theme.callout).foregroundStyle(Color.theme.textPrimary)
+            Spacer()
+            Button(action: onDismiss) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(Color.theme.textSecondary)
+            }
+        }
+        .padding()
+        .background(Color.theme.accentSubtle, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+        .padding(.horizontal)
     }
 }
 

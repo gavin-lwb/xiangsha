@@ -18,12 +18,20 @@ struct DoView: View {
     private var profiles: [UserProfile]
 
     @State private var viewModel = DoViewModel()
+    @State private var pendingAchievements: [Achievement] = []
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 if let scene = doScenes.first {
-                    DoContentView(scene: scene, pools: scene.cardPools, profile: profiles.first, viewModel: viewModel)
+                    DoContentView(
+                        scene: scene,
+                        pools: scene.cardPools,
+                        profile: profiles.first,
+                        viewModel: viewModel,
+                        onAcceptComplete: { checkAchievements() }
+                    )
                 } else {
                     PlaceholderTabView(sceneType: .task)
                 }
@@ -31,10 +39,15 @@ struct DoView: View {
             .background(Color.theme.background)
             .navigationTitle(DecisionSceneType.task.title)
             .navigationBarTitleDisplayMode(.large)
+            .overlay(alignment: .top) {
+                CelebrationToastStack(pendingAchievements: $pendingAchievements)
+                    .padding(.top, ThemeSpacing.md)
+            }
         }
         .onAppear {
             viewModel.scene = doScenes.first
             viewModel.selectedPool = doScenes.first?.cardPools.first
+            viewModel.modelContext = modelContext
             if let profile = profiles.first {
                 viewModel.userProfileSnapshot = UserProfileSnapshot(
                     from: profile,
@@ -45,6 +58,14 @@ struct DoView: View {
             }
         }
     }
+
+    private func checkAchievements() {
+        guard let profile = profiles.first else { return }
+        let unlocked = AchievementService.checkAndUnlock(context: modelContext, profile: profile)
+        if !unlocked.isEmpty {
+            pendingAchievements.append(contentsOf: unlocked)
+        }
+    }
 }
 
 private struct DoContentView: View {
@@ -52,6 +73,7 @@ private struct DoContentView: View {
     let pools: [CardPool]
     let profile: UserProfile?
     @Bindable var viewModel: DoViewModel
+    let onAcceptComplete: () -> Void
 
     var body: some View {
         VStack(spacing: ThemeSpacing.lg) {
@@ -82,6 +104,7 @@ private struct DoContentView: View {
             Button(action: {
                 if viewModel.lastResult != nil {
                     viewModel.accept()
+                    onAcceptComplete()
                 } else {
                     Task { await viewModel.draw() }
                 }
@@ -108,6 +131,59 @@ private struct DoContentView: View {
         }
         .padding(.horizontal, ThemeSpacing.md)
         .padding(.bottom, ThemeSpacing.lg)
+        .overlay {
+            // D076 完成庆祝全屏弹窗
+            if viewModel.showingCelebration {
+                CompletionCelebration(
+                    text: viewModel.celebrationText,
+                    onDismiss: { viewModel.dismissCelebration() }
+                )
+            }
+        }
+    }
+}
+
+/// D076 全屏完成庆祝
+private struct CompletionCelebration: View {
+    let text: String
+    let onDismiss: () -> Void
+
+    @State private var scale: CGFloat = 0.5
+    @State private var opacity: Double = 0
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+
+            VStack(spacing: ThemeSpacing.md) {
+                Text("🎉")
+                    .font(.system(size: 80))
+                    .scaleEffect(scale)
+
+                Text(text)
+                    .font(Font.theme.title1)
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, ThemeSpacing.xl)
+
+                Button("继续", action: onDismiss)
+                    .font(Font.theme.buttonLarge)
+                    .padding(.horizontal, ThemeSpacing.xl)
+                    .padding(.vertical, ThemeSpacing.sm)
+                    .background(.white, in: Capsule())
+                    .foregroundStyle(.black)
+                    .padding(.top, ThemeSpacing.sm)
+            }
+            .padding(.vertical, ThemeSpacing.huge)
+        }
+        .opacity(opacity)
+        .onAppear {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
+                scale = 1.0
+                opacity = 1.0
+            }
+        }
     }
 }
 

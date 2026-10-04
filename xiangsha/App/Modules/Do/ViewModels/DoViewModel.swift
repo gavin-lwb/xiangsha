@@ -3,14 +3,16 @@
 //  xiangsha
 //
 //  Created by 风小孩 on 2026/10/4.
-//  关联决策：D064-D076（做啥）+ D076（完成庆祝）+ D134（不决策模式）
+//  关联决策：D064-D076（做啥）+ D076（完成庆祝）+ D097（firstTaskComplete）
 //
 
 import Foundation
 import SwiftUI
+import SwiftData
 
 /// 模块 C · 做啥 ViewModel
 @Observable
+@MainActor
 final class DoViewModel {
     var engine: DrawEngine = RuleBasedEngine()
     var scene: DecisionScene?
@@ -22,6 +24,12 @@ final class DoViewModel {
 
     /// v1.1+ 接 UserTaskRecord
     var completedTasksToday: Int = 0
+
+    /// D076 完成庆祝显示中
+    var showingCelebration: Bool = false
+
+    /// 注入 ModelContext
+    var modelContext: ModelContext?
 
     init() {}
 
@@ -46,16 +54,54 @@ final class DoViewModel {
         }
     }
 
+    /// 接受（任务完成 D076）→ 写 UserTaskRecord(.completed)
     func accept() {
+        guard let result = lastResult, let modelContext else { return }
+        let cardID = result.card.id
+
+        // 写 UserTaskRecord
+        let cardDescriptor = FetchDescriptor<Card>(predicate: #Predicate { $0.id == cardID })
+        if let card = (try? modelContext.fetch(cardDescriptor))?.first {
+            let record = UserTaskRecord(
+                taskID: card.id,
+                status: .completed,
+                noteText: nil
+            )
+            // taskID 用 Card UID（v1.1+ 用专用 TaskTemplate ID）
+            record.taskID = card.id
+            modelContext.insert(record)
+            try? modelContext.save()
+        }
+
         completedTasksToday += 1
+        showingCelebration = true
         lastResult = nil
     }
 
-    func reject() { lastResult = nil }
+    func reject() {
+        guard let result = lastResult, let modelContext else {
+            lastResult = nil
+            return
+        }
+        let cardID = result.card.id
+        let cardDescriptor = FetchDescriptor<Card>(predicate: #Predicate { $0.id == cardID })
+        if let card = (try? modelContext.fetch(cardDescriptor))?.first {
+            let record = UserTaskRecord(taskID: card.id, status: .abandoned)
+            record.taskID = card.id
+            modelContext.insert(record)
+            try? modelContext.save()
+        }
+        lastResult = nil
+    }
 
     func redraw() async { await draw() }
 
     func dismissError() { error = nil }
+
+    /// 关闭庆祝弹窗
+    func dismissCelebration() {
+        showingCelebration = false
+    }
 
     var greetingText: String {
         "今天先做点啥？🦊"
