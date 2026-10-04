@@ -260,36 +260,26 @@ private struct OnboardingPageIndicator: View {
     }
 }
 
-/// Flow layout 风格的 chips 选择器（v1 简化：两行固定）
+/// 过敏原 chip 选择器（LazyVGrid 自适应换行）
 private struct FlowingAllergenChips: View {
     let allergens: [String]
     @Binding var selectedAllergens: Set<String>
 
     var body: some View {
-        VStack(alignment: .leading, spacing: ThemeSpacing.xs) {
-            // 第一行：常见过敏原
-            HStack {
-                ForEach(allergens.dropLast(), id: \.self) { allergen in
-                    AllergenChip(
-                        title: allergen,
-                        isSelected: selectedAllergens.contains(allergen),
-                        isNone: false
-                    ) {
-                        toggle(allergen)
-                    }
-                }
-            }
-
-            // 第二行：「无」
-            HStack {
+        LazyVGrid(
+            columns: [GridItem(.adaptive(minimum: 80), spacing: ThemeSpacing.xs)],
+            alignment: .leading,
+            spacing: ThemeSpacing.xs
+        ) {
+            ForEach(allergens, id: \.self) { allergen in
+                let isNone = (allergen == UserProfile.noAllergenSentinel)
                 AllergenChip(
-                    title: UserProfile.noAllergenSentinelDisplay,
-                    isSelected: selectedAllergens.contains(UserProfile.noAllergenSentinel),
-                    isNone: true
+                    title: allergen,
+                    isSelected: selectedAllergens.contains(allergen),
+                    isNone: isNone
                 ) {
-                    toggle(UserProfile.noAllergenSentinel)
+                    toggle(allergen)
                 }
-                Spacer()
             }
         }
     }
@@ -313,8 +303,10 @@ private struct AllergenChip: View {
         Button(action: action) {
             Text(title)
                 .font(Font.theme.callout)
-                .padding(.horizontal, ThemeSpacing.sm)
-                .padding(.vertical, ThemeSpacing.xs)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
+                .padding(.horizontal, ThemeSpacing.md)
+                .padding(.vertical, ThemeSpacing.sm)
                 .background(
                     isSelected
                         ? (isNone ? Color.theme.success : Color.theme.accent)
