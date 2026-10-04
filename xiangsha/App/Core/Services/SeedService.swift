@@ -3,24 +3,25 @@
 //  xiangsha
 //
 //  Created by 风小孩 on 2026/10/4.
-//  关联决策：M0 内容生产（v1 lite）+ D094（设置导入/导出）
+//  关联决策：M0 内容生产（v1 full 集：180 张卡）
 //
 
 import Foundation
 import SwiftData
 
-/// 种子数据服务（M0 v1 lite 内嵌版）
+/// 种子数据服务（M0 v1 full 集：180 张卡）
 ///
-/// v1 上线策略：内嵌 24 张吃啥卡 + 12 张玩啥卡 + 8 张做啥关键词 + 10 张拍啥姿势，
-/// 首次启动自动播种（一次性）。后续 v1.1+ 改 JSON 文件加载。
+/// 规模分布（按 SPEC §6 / DOC §0）：
+/// - 吃啥 80 张（5 卡池 × 16）
+/// - 玩啥 40 张（4 卡池 × 10）
+/// - 做啥 30 张（5 卡池 × 6）
+/// - 拍啥 30 张（5 卡池 × 6）
 ///
-/// 占位说明：完整 M0 内容生产（274+ 张）按用户拍板 v1 不启动（DEVELOPMENT.md §4 决策 4）。
-/// 当前 SeedData 为"够 demo"最小集合。
+/// 总计 **180 张**（SPEC 目标 274+ 的子集，v1 demo 用；后续 v1.1+ 补全到 274+）
 @MainActor
 enum SeedService {
     /// App 启动时调用：检查并执行一次性种子
     static func seedIfNeeded(context: ModelContext) {
-        // 已种过则跳过（用 UserProfile 存在与否判断）
         let existingProfiles = (try? context.fetchCount(FetchDescriptor<UserProfile>())) ?? 0
         guard existingProfiles == 0 else { return }
 
@@ -43,13 +44,12 @@ enum SeedService {
         }
     }
 
-    // MARK: - 吃啥（24 张 / 4 卡池）
+    // MARK: - 吃啥（80 张 / 5 卡池）
 
     private static func seedEatCards(context: ModelContext) {
-        let eatScene = try? context.fetch(
+        guard let eatScene = try? context.fetch(
             FetchDescriptor<DecisionScene>(predicate: #Predicate { $0.typeRaw == "eat" })
-        ).first
-        guard let eatScene else { return }
+        ).first else { return }
 
         for poolSpec in SeedData.eatPools {
             let pool = CardPool(
@@ -59,31 +59,29 @@ enum SeedService {
                 scene: eatScene
             )
             context.insert(pool)
-            for cardSpec in poolSpec.cards {
+            for spec in poolSpec.cards {
                 let card = Card(
-                    title: cardSpec.title,
+                    title: spec.title,
                     scene: eatScene,
                     pool: pool,
-                    emoji: cardSpec.emoji,
+                    emoji: spec.emoji,
                     category: poolSpec.category,
-                    brand: cardSpec.brand,
-                    allergens: cardSpec.allergens,
-                    difficulty: cardSpec.difficulty,
-                    timeMinutes: cardSpec.timeMinutes,
-                    metadata: cardSpec.metadata
+                    allergens: spec.allergens,
+                    difficulty: spec.difficulty,
+                    timeMinutes: spec.timeMinutes,
+                    metadata: spec.metadata
                 )
                 context.insert(card)
             }
         }
     }
 
-    // MARK: - 玩啥（12 张 / 4 卡池）
+    // MARK: - 玩啥（40 张 / 4 卡池）
 
     private static func seedPlayCards(context: ModelContext) {
-        let playScene = try? context.fetch(
+        guard let playScene = try? context.fetch(
             FetchDescriptor<DecisionScene>(predicate: #Predicate { $0.typeRaw == "play" })
-        ).first
-        guard let playScene else { return }
+        ).first else { return }
 
         for poolSpec in SeedData.playPools {
             let pool = CardPool(
@@ -93,89 +91,88 @@ enum SeedService {
                 scene: playScene
             )
             context.insert(pool)
-            for cardSpec in poolSpec.cards {
+            for spec in poolSpec.cards {
                 let card = Card(
-                    title: cardSpec.title,
+                    title: spec.title,
                     scene: playScene,
                     pool: pool,
-                    emoji: cardSpec.emoji,
+                    emoji: spec.emoji,
                     category: poolSpec.category,
                     allergens: [],
-                    difficulty: cardSpec.difficulty,
-                    timeMinutes: cardSpec.timeMinutes,
-                    metadata: cardSpec.metadata
+                    difficulty: spec.difficulty,
+                    timeMinutes: spec.timeMinutes,
+                    metadata: spec.metadata
                 )
                 context.insert(card)
             }
         }
     }
 
-    // MARK: - 做啥（8 张任务）
+    // MARK: - 做啥（30 张 / 5 卡池）
 
     private static func seedDoTasks(context: ModelContext) {
-        let doScene = try? context.fetch(
+        guard let doScene = try? context.fetch(
             FetchDescriptor<DecisionScene>(predicate: #Predicate { $0.typeRaw == "task" })
-        ).first
-        guard let doScene else { return }
+        ).first else { return }
 
-        // 做啥只创建一个统一卡池"小任务"
-        let pool = CardPool(
-            name: "小任务",
-            icon: "checkmark.circle",
-            sortOrder: 0,
-            scene: doScene
-        )
-        context.insert(pool)
-
-        for spec in SeedData.doTasks {
-            let card = Card(
-                title: spec.title,
-                scene: doScene,
-                pool: pool,
-                emoji: spec.emoji,
-                category: spec.category,
-                allergens: [],
-                difficulty: spec.difficulty,
-                timeMinutes: spec.timeMinutes,
-                metadata: spec.metadata
+        for poolSpec in SeedData.doPools {
+            let pool = CardPool(
+                name: poolSpec.name,
+                icon: poolSpec.icon,
+                sortOrder: poolSpec.sortOrder,
+                scene: doScene
             )
-            context.insert(card)
+            context.insert(pool)
+            for spec in poolSpec.cards {
+                let card = Card(
+                    title: spec.title,
+                    scene: doScene,
+                    pool: pool,
+                    emoji: spec.emoji,
+                    category: poolSpec.category,
+                    allergens: [],
+                    difficulty: spec.difficulty,
+                    timeMinutes: spec.timeMinutes,
+                    metadata: spec.metadata
+                )
+                context.insert(card)
+            }
         }
     }
 
-    // MARK: - 拍啥（10 张姿势）
+    // MARK: - 拍啥（30 张 / 5 卡池）
 
     private static func seedPhotoCards(context: ModelContext) {
-        let photoScene = try? context.fetch(
+        guard let photoScene = try? context.fetch(
             FetchDescriptor<DecisionScene>(predicate: #Predicate { $0.typeRaw == "photo" })
-        ).first
-        guard let photoScene else { return }
+        ).first else { return }
 
-        let pool = CardPool(
-            name: "通用姿势",
-            icon: "camera.viewfinder",
-            sortOrder: 0,
-            scene: photoScene
-        )
-        context.insert(pool)
-
-        for spec in SeedData.photoCards {
-            let card = Card(
-                title: spec.title,
-                scene: photoScene,
-                pool: pool,
-                emoji: spec.emoji,
-                category: spec.category,
-                allergens: [],
-                difficulty: 1,
-                timeMinutes: 5,
-                metadata: spec.metadata
+        for poolSpec in SeedData.photoPools {
+            let pool = CardPool(
+                name: poolSpec.name,
+                icon: poolSpec.icon,
+                sortOrder: poolSpec.sortOrder,
+                scene: photoScene
             )
-            context.insert(card)
+            context.insert(pool)
+            for spec in poolSpec.cards {
+                let card = Card(
+                    title: spec.title,
+                    scene: photoScene,
+                    pool: pool,
+                    emoji: spec.emoji,
+                    category: poolSpec.category,
+                    allergens: [],
+                    difficulty: 1,
+                    timeMinutes: 5,
+                    metadata: spec.metadata
+                )
+                context.insert(card)
+            }
         }
     }
 
-    // MARK: - 用户画像（默认）
+    // MARK: - 用户画像
 
     private static func seedUserProfile(context: ModelContext) {
         let profile = UserProfile(
@@ -188,117 +185,270 @@ enum SeedService {
     }
 }
 
-// MARK: - 内嵌种子数据（v1 lite）
+// MARK: - 内嵌种子数据
 
 private enum SeedData {
-    // 吃啥 4 卡池
+    // MARK: 吃啥 5 卡池 × 16 张 = 80 张
+
     static let eatPools: [EatPoolSpec] = [
         EatPoolSpec(
-            name: "快手菜",
-            icon: "bolt.fill",
-            sortOrder: 0,
-            category: "dish",
-            cards: [
-                EatCardSpec(title: "蛋炒饭", emoji: "🍳", brand: nil, allergens: ["鸡蛋"], difficulty: 1, timeMinutes: 10, metadata: ["mainIngredient": "米饭"]),
-                EatCardSpec(title: "番茄炒蛋", emoji: "🍅", brand: nil, allergens: ["鸡蛋"], difficulty: 1, timeMinutes: 8, metadata: ["mainIngredient": "番茄"]),
-                EatCardSpec(title: "煮泡面", emoji: "🍜", brand: nil, allergens: ["小麦"], difficulty: 1, timeMinutes: 5, metadata: ["mainIngredient": "面条"]),
-                EatCardSpec(title: "煎饺", emoji: "🥟", brand: nil, allergens: ["小麦"], difficulty: 2, timeMinutes: 15, metadata: ["mainIngredient": "猪肉"]),
-                EatCardSpec(title: "拌面", emoji: "🍝", brand: nil, allergens: ["小麦"], difficulty: 1, timeMinutes: 12, metadata: ["mainIngredient": "面条"]),
-                EatCardSpec(title: "三明治", emoji: "🥪", brand: nil, allergens: ["小麦"], difficulty: 2, timeMinutes: 8, metadata: ["mainIngredient": "面包"])
-            ]
+            name: "早餐", icon: "sun.horizon.fill", sortOrder: 0, category: "breakfast",
+            cards: breakfastCards
         ),
         EatPoolSpec(
-            name: "川菜",
-            icon: "flame.fill",
-            sortOrder: 1,
-            category: "dish",
-            cards: [
-                EatCardSpec(title: "麻婆豆腐", emoji: "🌶️", brand: nil, allergens: ["大豆"], difficulty: 3, timeMinutes: 20, metadata: ["mainIngredient": "豆腐", "spicyLevel": "3"]),
-                EatCardSpec(title: "回锅肉", emoji: "🥩", brand: nil, allergens: ["大豆"], difficulty: 3, timeMinutes: 25, metadata: ["mainIngredient": "猪肉", "spicyLevel": "2"]),
-                EatCardSpec(title: "水煮鱼", emoji: "🐟", brand: nil, allergens: ["大豆"], difficulty: 4, timeMinutes: 30, metadata: ["mainIngredient": "鱼", "spicyLevel": "3"]),
-                EatCardSpec(title: "夫妻肺片", emoji: "🥗", brand: nil, allergens: ["大豆"], difficulty: 4, timeMinutes: 30, metadata: ["mainIngredient": "牛肉", "spicyLevel": "3"]),
-                EatCardSpec(title: "宫保鸡丁", emoji: "🍗", brand: nil, allergens: ["花生", "大豆"], difficulty: 3, timeMinutes: 25, metadata: ["mainIngredient": "鸡肉", "spicyLevel": "2"]),
-                EatCardSpec(title: "酸辣粉", emoji: "🍜", brand: nil, allergens: ["花生"], difficulty: 2, timeMinutes: 15, metadata: ["mainIngredient": "粉丝", "spicyLevel": "2"])
-            ]
+            name: "午餐", icon: "sun.max.fill", sortOrder: 1, category: "lunch",
+            cards: lunchCards
         ),
         EatPoolSpec(
-            name: "粤菜",
-            icon: "leaf.fill",
-            sortOrder: 2,
-            category: "dish",
-            cards: [
-                EatCardSpec(title: "白切鸡", emoji: "🍗", brand: nil, allergens: [], difficulty: 3, timeMinutes: 45, metadata: ["mainIngredient": "鸡肉"]),
-                EatCardSpec(title: "蒸蛋", emoji: "🥚", brand: nil, allergens: ["鸡蛋"], difficulty: 2, timeMinutes: 15, metadata: ["mainIngredient": "鸡蛋"]),
-                EatCardSpec(title: "叉烧", emoji: "🥩", brand: nil, allergens: [], difficulty: 3, timeMinutes: 60, metadata: ["mainIngredient": "猪肉"]),
-                EatCardSpec(title: "肠粉", emoji: "🌯", brand: nil, allergens: ["大豆", "鸡蛋"], difficulty: 3, timeMinutes: 20, metadata: ["mainIngredient": "米浆"]),
-                EatCardSpec(title: "艇仔粥", emoji: "🍲", brand: nil, allergens: [], difficulty: 3, timeMinutes: 30, metadata: ["mainIngredient": "米"]),
-                EatCardSpec(title: "蜜汁叉烧包", emoji: "🍞", brand: nil, allergens: ["小麦"], difficulty: 3, timeMinutes: 40, metadata: ["mainIngredient": "面粉"])
-            ]
+            name: "下午茶", icon: "cup.and.saucer.fill", sortOrder: 2, category: "tea",
+            cards: teaCards
         ),
         EatPoolSpec(
-            name: "夜宵",
-            icon: "moon.stars.fill",
-            sortOrder: 3,
-            category: "dish",
-            cards: [
-                EatCardSpec(title: "烧烤", emoji: "🍢", brand: nil, allergens: [], difficulty: 2, timeMinutes: 30, metadata: ["mainIngredient": "肉串"]),
-                EatCardSpec(title: "麻辣烫", emoji: "🌶️", brand: nil, allergens: [], difficulty: 1, timeMinutes: 15, metadata: ["mainIngredient": "蔬菜"]),
-                EatCardSpec(title: "小龙虾", emoji: "🦐", brand: nil, allergens: [], difficulty: 2, timeMinutes: 30, metadata: ["mainIngredient": "虾", "spicyLevel": "2"]),
-                EatCardSpec(title: "炸鸡", emoji: "🍗", brand: "麦当劳", allergens: ["小麦"], difficulty: 1, timeMinutes: 5, metadata: ["mainIngredient": "鸡肉"]),
-                EatCardSpec(title: "披萨", emoji: "🍕", brand: nil, allergens: ["小麦", "奶"], difficulty: 1, timeMinutes: 25, metadata: ["mainIngredient": "面粉"]),
-                EatCardSpec(title: "关东煮", emoji: "🍢", brand: nil, allergens: [], difficulty: 1, timeMinutes: 10, metadata: ["mainIngredient": "鱼丸"])
-            ]
+            name: "晚餐", icon: "moon.fill", sortOrder: 3, category: "dinner",
+            cards: dinnerCards
+        ),
+        EatPoolSpec(
+            name: "夜宵", icon: "moon.stars.fill", sortOrder: 4, category: "latenight",
+            cards: latenightCards
         )
     ]
 
-    // 玩啥 4 卡池
+    private static let breakfastCards: [EatCardSpec] = [
+        EatCardSpec(title: "肉包", emoji: "🥟", brand: nil, allergens: ["小麦"], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "菜包", emoji: "🥬", brand: nil, allergens: ["小麦"], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "煎饺", emoji: "🥟", brand: nil, allergens: ["小麦"], difficulty: 1, timeMinutes: 10),
+        EatCardSpec(title: "小笼包", emoji: "🥟", brand: nil, allergens: ["小麦"], difficulty: 2, timeMinutes: 15),
+        EatCardSpec(title: "豆浆油条", emoji: "🥛", brand: nil, allergens: ["大豆"], difficulty: 1, timeMinutes: 10),
+        EatCardSpec(title: "皮蛋瘦肉粥", emoji: "🍲", brand: nil, allergens: [], difficulty: 2, timeMinutes: 20),
+        EatCardSpec(title: "小米粥", emoji: "🥣", brand: nil, allergens: [], difficulty: 1, timeMinutes: 15),
+        EatCardSpec(title: "煎饼果子", emoji: "🥞", brand: nil, allergens: ["小麦", "鸡蛋"], difficulty: 2, timeMinutes: 10),
+        EatCardSpec(title: "鸡蛋灌饼", emoji: "🍳", brand: nil, allergens: ["小麦", "鸡蛋"], difficulty: 2, timeMinutes: 10),
+        EatCardSpec(title: "三明治", emoji: "🥪", brand: nil, allergens: ["小麦"], difficulty: 1, timeMinutes: 8),
+        EatCardSpec(title: "燕麦杯", emoji: "🥣", brand: nil, allergens: ["麦"], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "酸奶麦片", emoji: "🥛", brand: nil, allergens: ["奶", "麦"], difficulty: 1, timeMinutes: 3),
+        EatCardSpec(title: "茶叶蛋", emoji: "🥚", brand: nil, allergens: ["鸡蛋"], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "葱油饼", emoji: "🥞", brand: nil, allergens: ["小麦"], difficulty: 2, timeMinutes: 10),
+        EatCardSpec(title: "蛋炒饭", emoji: "🍳", brand: nil, allergens: ["鸡蛋"], difficulty: 1, timeMinutes: 10),
+        EatCardSpec(title: "白粥 + 咸菜", emoji: "🥣", brand: nil, allergens: [], difficulty: 1, timeMinutes: 10)
+    ]
+
+    private static let lunchCards: [EatCardSpec] = [
+        EatCardSpec(title: "黄焖鸡米饭", emoji: "🍗", brand: nil, allergens: [], difficulty: 2, timeMinutes: 25),
+        EatCardSpec(title: "沙县小吃", emoji: "🍜", brand: nil, allergens: ["小麦"], difficulty: 1, timeMinutes: 15),
+        EatCardSpec(title: "兰州拉面", emoji: "🍜", brand: nil, allergens: ["小麦"], difficulty: 2, timeMinutes: 20),
+        EatCardSpec(title: "螺蛳粉", emoji: "🍝", brand: nil, allergens: [], difficulty: 2, timeMinutes: 20),
+        EatCardSpec(title: "麻辣香锅", emoji: "🌶️", brand: nil, allergens: ["花生"], difficulty: 3, timeMinutes: 30),
+        EatCardSpec(title: "烤鱼", emoji: "🐟", brand: nil, allergens: [], difficulty: 3, timeMinutes: 35),
+        EatCardSpec(title: "烤肉饭", emoji: "🍱", brand: nil, allergens: [], difficulty: 2, timeMinutes: 20),
+        EatCardSpec(title: "炸鸡套餐", emoji: "🍗", brand: nil, allergens: ["小麦"], difficulty: 1, timeMinutes: 15),
+        EatCardSpec(title: "汉堡", emoji: "🍔", brand: nil, allergens: ["小麦", "奶"], difficulty: 1, timeMinutes: 10),
+        EatCardSpec(title: "披萨", emoji: "🍕", brand: nil, allergens: ["小麦", "奶"], difficulty: 2, timeMinutes: 25),
+        EatCardSpec(title: "麦当劳", emoji: "🍟", brand: "麦当劳", allergens: ["小麦"], difficulty: 1, timeMinutes: 10),
+        EatCardSpec(title: "肯德基", emoji: "🍗", brand: "肯德基", allergens: ["小麦"], difficulty: 1, timeMinutes: 10),
+        EatCardSpec(title: "肉夹馍", emoji: "🥙", brand: nil, allergens: ["小麦"], difficulty: 2, timeMinutes: 10),
+        EatCardSpec(title: "牛肉面", emoji: "🍜", brand: nil, allergens: ["小麦"], difficulty: 2, timeMinutes: 20),
+        EatCardSpec(title: "担担面", emoji: "🍝", brand: nil, allergens: ["小麦", "花生"], difficulty: 2, timeMinutes: 15),
+        EatCardSpec(title: "凉皮", emoji: "🥗", brand: nil, allergens: [], difficulty: 1, timeMinutes: 10)
+    ]
+
+    private static let teaCards: [EatCardSpec] = [
+        EatCardSpec(title: "珍珠奶茶", emoji: "🧋", brand: nil, allergens: ["奶"], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "美式咖啡", emoji: "☕", brand: nil, allergens: [], difficulty: 1, timeMinutes: 3),
+        EatCardSpec(title: "拿铁", emoji: "☕", brand: nil, allergens: ["奶"], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "芝士蛋糕", emoji: "🍰", brand: nil, allergens: ["奶", "小麦", "鸡蛋"], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "提拉米苏", emoji: "🍰", brand: nil, allergens: ["奶", "小麦", "鸡蛋"], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "曲奇", emoji: "🍪", brand: nil, allergens: ["小麦", "奶"], difficulty: 1, timeMinutes: 3),
+        EatCardSpec(title: "水果拼盘", emoji: "🍓", brand: nil, allergens: [], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "酸奶", emoji: "🥛", brand: nil, allergens: ["奶"], difficulty: 1, timeMinutes: 2),
+        EatCardSpec(title: "冰淇淋", emoji: "🍦", brand: nil, allergens: ["奶", "鸡蛋"], difficulty: 1, timeMinutes: 3),
+        EatCardSpec(title: "布丁", emoji: "🍮", brand: nil, allergens: ["奶", "鸡蛋"], difficulty: 1, timeMinutes: 3),
+        EatCardSpec(title: "马卡龙", emoji: "🍬", brand: nil, allergens: ["奶", "小麦"], difficulty: 1, timeMinutes: 3),
+        EatCardSpec(title: "可丽饼", emoji: "🥞", brand: nil, allergens: ["小麦", "奶", "鸡蛋"], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "华夫饼", emoji: "🧇", brand: nil, allergens: ["小麦", "奶", "鸡蛋"], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "草莓蛋糕", emoji: "🍰", brand: nil, allergens: ["奶", "小麦", "鸡蛋"], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "巧克力", emoji: "🍫", brand: nil, allergens: ["奶"], difficulty: 1, timeMinutes: 1),
+        EatCardSpec(title: "气泡水", emoji: "🥤", brand: nil, allergens: [], difficulty: 1, timeMinutes: 2)
+    ]
+
+    private static let dinnerCards: [EatCardSpec] = [
+        EatCardSpec(title: "麻婆豆腐", emoji: "🌶️", brand: nil, allergens: ["大豆"], difficulty: 3, timeMinutes: 20),
+        EatCardSpec(title: "回锅肉", emoji: "🥩", brand: nil, allergens: ["大豆"], difficulty: 3, timeMinutes: 25),
+        EatCardSpec(title: "水煮鱼", emoji: "🐟", brand: nil, allergens: ["大豆"], difficulty: 4, timeMinutes: 30),
+        EatCardSpec(title: "夫妻肺片", emoji: "🥗", brand: nil, allergens: ["大豆"], difficulty: 4, timeMinutes: 30),
+        EatCardSpec(title: "宫保鸡丁", emoji: "🍗", brand: nil, allergens: ["花生", "大豆"], difficulty: 3, timeMinutes: 25),
+        EatCardSpec(title: "酸菜鱼", emoji: "🐟", brand: nil, allergens: [], difficulty: 3, timeMinutes: 30),
+        EatCardSpec(title: "糖醋里脊", emoji: "🥩", brand: nil, allergens: ["小麦", "鸡蛋"], difficulty: 3, timeMinutes: 25),
+        EatCardSpec(title: "红烧肉", emoji: "🥩", brand: nil, allergens: [], difficulty: 4, timeMinutes: 60),
+        EatCardSpec(title: "番茄牛腩", emoji: "🍅", brand: nil, allergens: [], difficulty: 3, timeMinutes: 40),
+        EatCardSpec(title: "东坡肉", emoji: "🥩", brand: nil, allergens: [], difficulty: 4, timeMinutes: 90),
+        EatCardSpec(title: "白切鸡", emoji: "🍗", brand: nil, allergens: [], difficulty: 3, timeMinutes: 45),
+        EatCardSpec(title: "蒸蛋", emoji: "🥚", brand: nil, allergens: ["鸡蛋"], difficulty: 2, timeMinutes: 15),
+        EatCardSpec(title: "烤鸭", emoji: "🦆", brand: nil, allergens: ["小麦"], difficulty: 4, timeMinutes: 60),
+        EatCardSpec(title: "叉烧", emoji: "🥩", brand: nil, allergens: [], difficulty: 3, timeMinutes: 60),
+        EatCardSpec(title: "蛋炒饭", emoji: "🍳", brand: nil, allergens: ["鸡蛋"], difficulty: 1, timeMinutes: 10),
+        EatCardSpec(title: "皮蛋豆腐", emoji: "🥚", brand: nil, allergens: ["大豆", "鸡蛋"], difficulty: 2, timeMinutes: 10)
+    ]
+
+    private static let latenightCards: [EatCardSpec] = [
+        EatCardSpec(title: "烧烤", emoji: "🍢", brand: nil, allergens: [], difficulty: 2, timeMinutes: 30),
+        EatCardSpec(title: "麻辣烫", emoji: "🌶️", brand: nil, allergens: [], difficulty: 1, timeMinutes: 15),
+        EatCardSpec(title: "小龙虾", emoji: "🦐", brand: nil, allergens: [], difficulty: 2, timeMinutes: 30),
+        EatCardSpec(title: "炸鸡", emoji: "🍗", brand: nil, allergens: ["小麦"], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "披萨", emoji: "🍕", brand: nil, allergens: ["小麦", "奶"], difficulty: 1, timeMinutes: 25),
+        EatCardSpec(title: "关东煮", emoji: "🍢", brand: nil, allergens: [], difficulty: 1, timeMinutes: 10),
+        EatCardSpec(title: "烤面筋", emoji: "🍢", brand: nil, allergens: ["小麦"], difficulty: 1, timeMinutes: 10),
+        EatCardSpec(title: "烤冷面", emoji: "🥞", brand: nil, allergens: ["小麦", "鸡蛋"], difficulty: 1, timeMinutes: 10),
+        EatCardSpec(title: "烤红薯", emoji: "🍠", brand: nil, allergens: [], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "烤玉米", emoji: "🌽", brand: nil, allergens: [], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "卤味", emoji: "🥚", brand: nil, allergens: [], difficulty: 2, timeMinutes: 15),
+        EatCardSpec(title: "凉皮", emoji: "🥗", brand: nil, allergens: [], difficulty: 1, timeMinutes: 10),
+        EatCardSpec(title: "白粥", emoji: "🥣", brand: nil, allergens: [], difficulty: 1, timeMinutes: 10),
+        EatCardSpec(title: "泡面", emoji: "🍜", brand: nil, allergens: ["小麦"], difficulty: 1, timeMinutes: 5),
+        EatCardSpec(title: "牛肉面", emoji: "🍜", brand: nil, allergens: ["小麦"], difficulty: 2, timeMinutes: 20),
+        EatCardSpec(title: "烤串", emoji: "🍢", brand: nil, allergens: [], difficulty: 2, timeMinutes: 20)
+    ]
+
+    // MARK: 玩啥 4 卡池 × 10 张 = 40 张
+
     static let playPools: [PlayPoolSpec] = [
         PlayPoolSpec(name: "室内单人", icon: "house.fill", sortOrder: 0, category: "solo_indoor", cards: [
             PlayCardSpec(title: "看一部电影", emoji: "🎬", difficulty: 1, timeMinutes: 120, metadata: ["style": "passive"]),
             PlayCardSpec(title: "读一本书", emoji: "📚", difficulty: 2, timeMinutes: 60, metadata: ["style": "calm"]),
             PlayCardSpec(title: "玩电子游戏", emoji: "🎮", difficulty: 1, timeMinutes: 90, metadata: ["style": "fun"]),
-            PlayCardSpec(title: "做手账", emoji: "✏️", difficulty: 2, timeMinutes: 60, metadata: ["style": "creative"])
+            PlayCardSpec(title: "做手账", emoji: "✏️", difficulty: 2, timeMinutes: 60, metadata: ["style": "creative"]),
+            PlayCardSpec(title: "学做一道菜", emoji: "🍳", difficulty: 3, timeMinutes: 60, metadata: ["style": "creative"]),
+            PlayCardSpec(title: "练字", emoji: "✍️", difficulty: 2, timeMinutes: 30, metadata: ["style": "calm"]),
+            PlayCardSpec(title: "做冥想", emoji: "🧘", difficulty: 2, timeMinutes: 20, metadata: ["style": "calm"]),
+            PlayCardSpec(title: "听播客", emoji: "🎙️", difficulty: 1, timeMinutes: 60, metadata: ["style": "passive"]),
+            PlayCardSpec(title: "拼乐高", emoji: "🧱", difficulty: 3, timeMinutes: 90, metadata: ["style": "creative"]),
+            PlayCardSpec(title: "练瑜伽", emoji: "🧘‍♀️", difficulty: 2, timeMinutes: 45, metadata: ["style": "calm"])
         ]),
         PlayPoolSpec(name: "室内多人", icon: "person.3.fill", sortOrder: 1, category: "group_indoor", cards: [
             PlayCardSpec(title: "桌游之夜", emoji: "🎲", difficulty: 2, timeMinutes: 120, metadata: ["style": "social"]),
-            PlayCardSpec(title: "火锅聚会", emoji: "🍲", difficulty: 2, timeMinutes: 90, metadata: ["style": "social"])
+            PlayCardSpec(title: "火锅聚会", emoji: "🍲", difficulty: 2, timeMinutes: 90, metadata: ["style": "social"]),
+            PlayCardSpec(title: "KTV 唱 K", emoji: "🎤", difficulty: 2, timeMinutes: 120, metadata: ["style": "social"]),
+            PlayCardSpec(title: "打麻将", emoji: "🀄", difficulty: 2, timeMinutes: 120, metadata: ["style": "social"]),
+            PlayCardSpec(title: "剧本杀", emoji: "🎭", difficulty: 3, timeMinutes: 180, metadata: ["style": "social"]),
+            PlayCardSpec(title: "家庭影院", emoji: "📺", difficulty: 1, timeMinutes: 120, metadata: ["style": "passive"]),
+            PlayCardSpec(title: "打扑克", emoji: "🃏", difficulty: 2, timeMinutes: 60, metadata: ["style": "social"]),
+            PlayCardSpec(title: "密室逃脱", emoji: "🔐", difficulty: 4, timeMinutes: 120, metadata: ["style": "social"]),
+            PlayCardSpec(title: "一起做甜品", emoji: "🍰", difficulty: 3, timeMinutes: 90, metadata: ["style": "creative"]),
+            PlayCardSpec(title: "棋牌室", emoji: "♟️", difficulty: 2, timeMinutes: 90, metadata: ["style": "social"])
         ]),
         PlayPoolSpec(name: "室外单人", icon: "figure.walk", sortOrder: 2, category: "solo_outdoor", cards: [
             PlayCardSpec(title: "公园散步", emoji: "🌳", difficulty: 1, timeMinutes: 30, metadata: ["style": "calm"]),
             PlayCardSpec(title: "City Walk", emoji: "🚶", difficulty: 2, timeMinutes: 90, metadata: ["style": "explore"]),
-            PlayCardSpec(title: "骑自行车", emoji: "🚴", difficulty: 3, timeMinutes: 60, metadata: ["style": "active"])
+            PlayCardSpec(title: "骑自行车", emoji: "🚴", difficulty: 3, timeMinutes: 60, metadata: ["style": "active"]),
+            PlayCardSpec(title: "慢跑", emoji: "🏃", difficulty: 3, timeMinutes: 45, metadata: ["style": "active"]),
+            PlayCardSpec(title: "摄影采风", emoji: "📷", difficulty: 2, timeMinutes: 90, metadata: ["style": "explore"]),
+            PlayCardSpec(title: "河边钓鱼", emoji: "🎣", difficulty: 2, timeMinutes: 180, metadata: ["style": "calm"]),
+            PlayCardSpec(title: "滑板", emoji: "🛹", difficulty: 3, timeMinutes: 60, metadata: ["style": "active"]),
+            PlayCardSpec(title: "轮滑", emoji: "⛸️", difficulty: 3, timeMinutes: 60, metadata: ["style": "active"]),
+            PlayCardSpec(title: "慢跑 5km", emoji: "🏃‍♀️", difficulty: 3, timeMinutes: 40, metadata: ["style": "active"]),
+            PlayCardSpec(title: "city 不 walk", emoji: "🚶‍♀️", difficulty: 2, timeMinutes: 60, metadata: ["style": "explore"])
         ]),
         PlayPoolSpec(name: "室外多人", icon: "figure.run", sortOrder: 3, category: "group_outdoor", cards: [
             PlayCardSpec(title: "爬山", emoji: "⛰️", difficulty: 4, timeMinutes: 240, metadata: ["style": "active"]),
             PlayCardSpec(title: "野餐", emoji: "🧺", difficulty: 2, timeMinutes: 120, metadata: ["style": "social"]),
-            PlayCardSpec(title: "飞盘", emoji: "🥏", difficulty: 2, timeMinutes: 60, metadata: ["style": "active"])
+            PlayCardSpec(title: "玩飞盘", emoji: "🥏", difficulty: 2, timeMinutes: 60, metadata: ["style": "active"]),
+            PlayCardSpec(title: "踢足球", emoji: "⚽", difficulty: 3, timeMinutes: 90, metadata: ["style": "active"]),
+            PlayCardSpec(title: "打羽毛球", emoji: "🏸", difficulty: 2, timeMinutes: 60, metadata: ["style": "active"]),
+            PlayCardSpec(title: "打篮球", emoji: "🏀", difficulty: 3, timeMinutes: 90, metadata: ["style": "active"]),
+            PlayCardSpec(title: "打网球", emoji: "🎾", difficulty: 3, timeMinutes: 90, metadata: ["style": "active"]),
+            PlayCardSpec(title: "游泳", emoji: "🏊", difficulty: 2, timeMinutes: 60, metadata: ["style": "active"]),
+            PlayCardSpec(title: "滑雪", emoji: "⛷️", difficulty: 4, timeMinutes: 240, metadata: ["style": "active"]),
+            PlayCardSpec(title: "露营", emoji: "⛺", difficulty: 4, timeMinutes: 1440, metadata: ["style": "social"])
         ])
     ]
 
-    // 做啥 8 任务
-    static let doTasks: [DoTaskSpec] = [
-        DoTaskSpec(title: "整理桌面", emoji: "🗂️", category: "整理", difficulty: 1, timeMinutes: 10, metadata: ["type": "micro"]),
-        DoTaskSpec(title: "洗杯子", emoji: "🥤", category: "清洁", difficulty: 1, timeMinutes: 5, metadata: ["type": "micro"]),
-        DoTaskSpec(title: "回一条信息", emoji: "💬", category: "沟通", difficulty: 1, timeMinutes: 3, metadata: ["type": "micro"]),
-        DoTaskSpec(title: "喝一杯水", emoji: "💧", category: "健康", difficulty: 1, timeMinutes: 1, metadata: ["type": "micro"]),
-        DoTaskSpec(title: "站起来伸展", emoji: "🤸", category: "健康", difficulty: 1, timeMinutes: 3, metadata: ["type": "rescue"]),
-        DoTaskSpec(title: "写 3 件事", emoji: "📝", category: "整理", difficulty: 2, timeMinutes: 5, metadata: ["type": "rescue"]),
-        DoTaskSpec(title: "深呼吸 5 次", emoji: "🌬️", category: "急救", difficulty: 1, timeMinutes: 2, metadata: ["type": "rescue"]),
-        DoTaskSpec(title: "放下手机 5 分钟", emoji: "📵", category: "急救", difficulty: 2, timeMinutes: 5, metadata: ["type": "rescue"])
+    // MARK: 做啥 5 卡池 × 6 张 = 30 张
+
+    static let doPools: [DoPoolSpec] = [
+        DoPoolSpec(name: "整理", icon: "tray.full.fill", sortOrder: 0, category: "整理", cards: [
+            DoCardSpec(title: "整理桌面", emoji: "🗂️", difficulty: 1, timeMinutes: 10, metadata: ["type": "micro"]),
+            DoCardSpec(title: "整理衣柜 1 层", emoji: "👕", difficulty: 2, timeMinutes: 20, metadata: ["type": "micro"]),
+            DoCardSpec(title: "整理书架", emoji: "📚", difficulty: 2, timeMinutes: 15, metadata: ["type": "micro"]),
+            DoCardSpec(title: "整理文件 5 分钟", emoji: "📁", difficulty: 1, timeMinutes: 5, metadata: ["type": "micro"]),
+            DoCardSpec(title: "整理手机相册", emoji: "📱", difficulty: 2, timeMinutes: 15, metadata: ["type": "micro"]),
+            DoCardSpec(title: "清理邮箱", emoji: "📧", difficulty: 2, timeMinutes: 15, metadata: ["type": "micro"])
+        ]),
+        DoPoolSpec(name: "清洁", icon: "sparkles", sortOrder: 1, category: "清洁", cards: [
+            DoCardSpec(title: "洗碗", emoji: "🍽️", difficulty: 1, timeMinutes: 10, metadata: ["type": "micro"]),
+            DoCardSpec(title: "洗杯子", emoji: "🥤", difficulty: 1, timeMinutes: 5, metadata: ["type": "micro"]),
+            DoCardSpec(title: "擦桌子", emoji: "🧽", difficulty: 1, timeMinutes: 5, metadata: ["type": "micro"]),
+            DoCardSpec(title: "拖 1 个房间", emoji: "🧹", difficulty: 2, timeMinutes: 15, metadata: ["type": "micro"]),
+            DoCardSpec(title: "擦窗户 1 面", emoji: "🪟", difficulty: 2, timeMinutes: 15, metadata: ["type": "micro"]),
+            DoCardSpec(title: "整理床铺", emoji: "🛏️", difficulty: 1, timeMinutes: 5, metadata: ["type": "micro"])
+        ]),
+        DoPoolSpec(name: "健康", icon: "heart.fill", sortOrder: 2, category: "健康", cards: [
+            DoCardSpec(title: "喝一杯水", emoji: "💧", difficulty: 1, timeMinutes: 1, metadata: ["type": "micro"]),
+            DoCardSpec(title: "站起来伸展", emoji: "🤸", difficulty: 1, timeMinutes: 3, metadata: ["type": "rescue"]),
+            DoCardSpec(title: "深呼吸 5 次", emoji: "🌬️", difficulty: 1, timeMinutes: 2, metadata: ["type": "rescue"]),
+            DoCardSpec(title: "闭眼休息 5 分钟", emoji: "😌", difficulty: 1, timeMinutes: 5, metadata: ["type": "rescue"]),
+            DoCardSpec(title: "吃一份水果", emoji: "🍎", difficulty: 1, timeMinutes: 5, metadata: ["type": "micro"]),
+            DoCardSpec(title: "午睡 20 分钟", emoji: "😴", difficulty: 1, timeMinutes: 20, metadata: ["type": "rescue"])
+        ]),
+        DoPoolSpec(name: "急救", icon: "exclamationmark.triangle.fill", sortOrder: 3, category: "急救", cards: [
+            DoCardSpec(title: "放下手机 5 分钟", emoji: "📵", difficulty: 2, timeMinutes: 5, metadata: ["type": "rescue"]),
+            DoCardSpec(title: "站起来走 2 步", emoji: "🚶", difficulty: 1, timeMinutes: 1, metadata: ["type": "rescue"]),
+            DoCardSpec(title: "喝一杯温水", emoji: "☕", difficulty: 1, timeMinutes: 2, metadata: ["type": "rescue"]),
+            DoCardSpec(title: "闭上眼睛 30 秒", emoji: "🙈", difficulty: 1, timeMinutes: 1, metadata: ["type": "rescue"]),
+            DoCardSpec(title: "握拳松开 5 次", emoji: "✊", difficulty: 1, timeMinutes: 1, metadata: ["type": "rescue"]),
+            DoCardSpec(title: "深呼吸 10 次", emoji: "😮‍💨", difficulty: 1, timeMinutes: 2, metadata: ["type": "rescue"])
+        ]),
+        DoPoolSpec(name: "沟通 + 学习", icon: "bubble.left.and.bubble.right.fill", sortOrder: 4, category: "成长", cards: [
+            DoCardSpec(title: "回一条信息", emoji: "💬", difficulty: 1, timeMinutes: 3, metadata: ["type": "micro"]),
+            DoCardSpec(title: "打一个问候电话", emoji: "📞", difficulty: 2, timeMinutes: 10, metadata: ["type": "micro"]),
+            DoCardSpec(title: "写一张便签", emoji: "📝", difficulty: 2, timeMinutes: 5, metadata: ["type": "micro"]),
+            DoCardSpec(title: "读一篇短文", emoji: "📖", difficulty: 2, timeMinutes: 10, metadata: ["type": "micro"]),
+            DoCardSpec(title: "学一个新词", emoji: "📝", difficulty: 2, timeMinutes: 5, metadata: ["type": "micro"]),
+            DoCardSpec(title: "听一段 5 分钟播客", emoji: "🎧", difficulty: 1, timeMinutes: 5, metadata: ["type": "micro"])
+        ])
     ]
 
-    // 拍啥 10 姿势
-    static let photoCards: [PhotoCardSpec] = [
-        PhotoCardSpec(title: "半身微笑", emoji: "🙂", category: "solo", metadata: ["pose": "upper_body"]),
-        PhotoCardSpec(title: "侧面剪影", emoji: "🌅", category: "solo", metadata: ["pose": "side"]),
-        PhotoCardSpec(title: "背影照", emoji: "🚶", category: "solo", metadata: ["pose": "back"]),
-        PhotoCardSpec(title: "回眸一笑", emoji: "😊", category: "solo", metadata: ["pose": "look_back"]),
-        PhotoCardSpec(title: "双手比心", emoji: "🫶", category: "solo", metadata: ["pose": "heart_hands"]),
-        PhotoCardSpec(title: "情侣对视", emoji: "💑", category: "couple", metadata: ["pose": "face_to_face"]),
-        PhotoCardSpec(title: "情侣背影", emoji: "👫", category: "couple", metadata: ["pose": "back_together"]),
-        PhotoCardSpec(title: "朋友搞怪", emoji: "🤪", category: "friend", metadata: ["pose": "funny"]),
-        PhotoCardSpec(title: "朋友合影", emoji: "📸", category: "friend", metadata: ["pose": "group"]),
-        PhotoCardSpec(title: "全身站立", emoji: "🧍", category: "solo", metadata: ["pose": "full_body"])
+    // MARK: 拍啥 5 卡池 × 6 张 = 30 张
+
+    static let photoPools: [PhotoPoolSpec] = [
+        PhotoPoolSpec(name: "单人", icon: "person.fill", sortOrder: 0, category: "solo", cards: [
+            PhotoCardSpec(title: "半身微笑", emoji: "🙂", metadata: ["pose": "upper_body"]),
+            PhotoCardSpec(title: "侧面剪影", emoji: "🌅", metadata: ["pose": "side"]),
+            PhotoCardSpec(title: "背影照", emoji: "🚶", metadata: ["pose": "back"]),
+            PhotoCardSpec(title: "回眸一笑", emoji: "😊", metadata: ["pose": "look_back"]),
+            PhotoCardSpec(title: "双手比心", emoji: "🫶", metadata: ["pose": "heart_hands"]),
+            PhotoCardSpec(title: "全身站立", emoji: "🧍", metadata: ["pose": "full_body"])
+        ]),
+        PhotoPoolSpec(name: "情侣", icon: "heart.fill", sortOrder: 1, category: "couple", cards: [
+            PhotoCardSpec(title: "情侣对视", emoji: "💑", metadata: ["pose": "face_to_face"]),
+            PhotoCardSpec(title: "情侣背影", emoji: "👫", metadata: ["pose": "back_together"]),
+            PhotoCardSpec(title: "牵手特写", emoji: "🤝", metadata: ["pose": "hand_hold"]),
+            PhotoCardSpec(title: "额头靠", emoji: "💕", metadata: ["pose": "forehead"]),
+            PhotoCardSpec(title: "拥抱", emoji: "🤗", metadata: ["pose": "hug"]),
+            PhotoCardSpec(title: "亲额头", emoji: "💋", metadata: ["pose": "kiss_forehead"])
+        ]),
+        PhotoPoolSpec(name: "朋友", icon: "person.2.fill", sortOrder: 2, category: "friend", cards: [
+            PhotoCardSpec(title: "朋友合影", emoji: "📸", metadata: ["pose": "group"]),
+            PhotoCardSpec(title: "搞怪合影", emoji: "🤪", metadata: ["pose": "funny"]),
+            PhotoCardSpec(title: "比心合影", emoji: "🫶", metadata: ["pose": "heart"]),
+            PhotoCardSpec(title: "跳跃抓拍", emoji: "🦘", metadata: ["pose": "jump"]),
+            PhotoCardSpec(title: "干杯合影", emoji: "🍻", metadata: ["pose": "cheers"]),
+            PhotoCardSpec(title: "搞怪表情", emoji: "😜", metadata: ["pose": "expression"])
+        ]),
+        PhotoPoolSpec(name: "旅行", icon: "airplane", sortOrder: 3, category: "travel", cards: [
+            PhotoCardSpec(title: "景点打卡", emoji: "🗽", metadata: ["pose": "landmark"]),
+            PhotoCardSpec(title: "地标合影", emoji: "🏛️", metadata: ["pose": "monument"]),
+            PhotoCardSpec(title: "风景人像", emoji: "🏞️", metadata: ["pose": "scenic"]),
+            PhotoCardSpec(title: "城市全景", emoji: "🌆", metadata: ["pose": "cityscape"]),
+            PhotoCardSpec(title: "公路旅行", emoji: "🛣️", metadata: ["pose": "road"]),
+            PhotoCardSpec(title: "夕阳剪影", emoji: "🌇", metadata: ["pose": "sunset"])
+        ]),
+        PhotoPoolSpec(name: "美食 + 静物", icon: "fork.knife", sortOrder: 4, category: "still", cards: [
+            PhotoCardSpec(title: "食物摆盘", emoji: "🍱", metadata: ["pose": "food_plate"]),
+            PhotoCardSpec(title: "饮品特写", emoji: "🍹", metadata: ["pose": "drink"]),
+            PhotoCardSpec(title: "甜品", emoji: "🍰", metadata: ["pose": "dessert"]),
+            PhotoCardSpec(title: "咖啡拉花", emoji: "☕", metadata: ["pose": "coffee"]),
+            PhotoCardSpec(title: "水果特写", emoji: "🍓", metadata: ["pose": "fruit"]),
+            PhotoCardSpec(title: "桌面一角", emoji: "🪴", metadata: ["pose": "tabletop"])
+        ])
     ]
 }
 
@@ -319,7 +469,9 @@ private struct EatCardSpec {
     let allergens: [String]
     let difficulty: Int
     let timeMinutes: Int
-    let metadata: [String: String]?
+    var metadata: [String: String]? {
+        ["mainIngredient": title]
+    }
 }
 
 private struct PlayPoolSpec {
@@ -338,18 +490,32 @@ private struct PlayCardSpec {
     let metadata: [String: String]?
 }
 
-private struct DoTaskSpec {
+private struct DoPoolSpec {
+    let name: String
+    let icon: String
+    let sortOrder: Int
+    let category: String
+    let cards: [DoCardSpec]
+}
+
+private struct DoCardSpec {
     let title: String
     let emoji: String?
-    let category: String
     let difficulty: Int
     let timeMinutes: Int
     let metadata: [String: String]?
 }
 
+private struct PhotoPoolSpec {
+    let name: String
+    let icon: String
+    let sortOrder: Int
+    let category: String
+    let cards: [PhotoCardSpec]
+}
+
 private struct PhotoCardSpec {
     let title: String
     let emoji: String?
-    let category: String
     let metadata: [String: String]?
 }
