@@ -58,8 +58,21 @@ struct xiangshaApp: App {
 
     var body: some SwiftUI.Scene {
         WindowGroup {
-            ContentView()
+            RootView()
         }
         .modelContainer(container)
+    }
+}
+
+/// 根路由：D087 启动引导 vs ContentView
+struct RootView: View {
+    @AppStorage("onboardingCompleted") private var onboardingCompleted: Bool = false
+
+    var body: some View {
+        if onboardingCompleted {
+            ContentView()
+        } else {
+            OnboardingView()
+        }
     }
 }
