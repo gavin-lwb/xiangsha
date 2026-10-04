@@ -14,7 +14,7 @@
 
 | # | 实体 | 主要字段 | 关系 |
 |---|---|---|---|
-| 1 | `Scene` | id / type / title / icon | 1 → n CardPool |
+| 1 | `DecisionScene` | id / type / title / icon | 1 → n CardPool |
 | 2 | `CardPool` | id / sceneID / name / icon | 1 → n Card |
 | 3 | `Card` | id / sceneID / poolID / title / customTitle / emoji / category / brand / allergens / difficulty / timeMinutes / weight / excludeUntil / isUserCreated / isHidden / createdAt / updatedAt / metadata | 1 → n DrawRecord |
 | 4 | `DrawRecord` | id / cardID / createdAt / action（accept/reject/redraw/skip — 替代独立 DrawAction 实体）/ result | n → 1 Card |
@@ -29,7 +29,7 @@
 ### 10.2 ER 图
 
 ```
-Scene (1) ─── (n) CardPool
+DecisionScene (1) ─── (n) CardPool
                       │
                       │ (1)
                       ▼
@@ -51,7 +51,7 @@ UserTaskRecord (独立)
 
 | 关系 | 级联策略 | 理由 |
 |---|---|---|
-| Scene → CardPool | `.cascade` | 场景删除则其下卡池全删 |
+| DecisionScene → CardPool | `.cascade` | 场景删除则其下卡池全删 |
 | CardPool → Card | `.nullify` | 卡池删除，卡片归入「未分类」 |
 | Card → DrawRecord | `.nullify` | 历史是用户的「回忆」，不应随卡片删除 |
 | Card → CardSnapshot | `.cascade` | 快照冗余存储，随主卡删 |
@@ -83,7 +83,7 @@ enum SchemaVersion: Int, CaseIterable {
 
 static let modelsForSchema: [any PersistentModel.Type] = {
     switch SchemaVersion.current {
-    case .v1_0: return [Scene.self, CardPool.self, Card.self, DrawRecord.self, UserProfile.self, Favorite.self, UserTaskRecord.self]
+    case .v1_0: return [DecisionScene.self, CardPool.self, Card.self, DrawRecord.self, UserProfile.self, Favorite.self, UserTaskRecord.self]
     case .v1_1: return [/* + nutritionFacts */]
     case .v1_2: return [/* + DecisionJournalEntry, CardSnapshot, Routine, RoutineStep */]
     }
@@ -461,7 +461,7 @@ jobs:
 
 | 关系 | 策略 |
 |---|---|
-| Scene 删除 → CardPool | cascade |
+| DecisionScene 删除 → CardPool | cascade |
 | CardPool 删除 → Card | nullify（卡片归入「未分类」） |
 | Card 删除 → DrawRecord | nullify（保留历史但 cardSnapshot 兜底） |
 | Card 删除 → CardSnapshot | nullify（保留日记） |

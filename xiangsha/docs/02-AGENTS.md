@@ -34,7 +34,7 @@ xiangsha/
 │   └── ContentView.swift         # 4 Tab 主容器
 ├── Core/                         # 通用基础设施
 │   ├── Models/                   # SwiftData @Model
-│   │   ├── Scene.swift
+│   │   ├── DecisionScene.swift
 │   │   ├── CardPool.swift
 │   │   ├── Card.swift
 │   │   ├── DrawRecord.swift

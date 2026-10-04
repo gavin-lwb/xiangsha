@@ -747,7 +747,7 @@
 
 - **类型**：架构
 - **触发场景**：抽签引擎
-- **实现要点**：拍啥 Tab 内置 7 个 CardPool 共享一个 Scene
+- **实现要点**：拍啥 Tab 内置 7 个 CardPool 共享一个 DecisionScene
 - **验收标准**：
   - [ ] Given 拍啥 Tab When 抽签 Then 在当前选中卡池内抽
   - [ ] Given 切换卡池 When 抽签 Then 在新卡池内抽
@@ -853,19 +853,19 @@
 
 - **类型**：架构
 - **触发场景**：用户自定义卡
-- **实现要点**：用户加的卡归到对应 Scene 的「我的卡」子卡池，与内置卡混合抽签
+- **实现要点**：用户加的卡归到对应 DecisionScene 的「我的卡」子卡池，与内置卡混合抽签
 - **验收标准**：
   - [ ] Given 用户加 5 张吃啥卡 When 抽签 Then 这 5 张参与候选池
   - [ ] Given 用户删自定义卡 When 触发 Then 候选池立即移除
 
-### D004 · Scene 单独建模
+### D004 · DecisionScene 单独建模
 
 - **类型**：数据建模
 - **触发场景**：跨 Tab 数据隔离
-- **实现要点**：`Scene` 实体（id / type / title / icon），4 个 Scene（吃啥/玩啥/做啥/拍啥），每个 Scene 含多个 CardPool
+- **实现要点**：`DecisionScene` 实体（id / type / title / icon），4 个 DecisionScene（吃啥/玩啥/做啥/拍啥），每个 DecisionScene 含多个 CardPool
 - **验收标准**：
-  - [ ] Given 4 个 Scene When 启动 Then 都加载到 `ModelContext`
-  - [ ] Given 用户删 Scene 下所有卡 When 触发 Then Scene 本身不删
+  - [ ] Given 4 个 DecisionScene When 启动 Then 都加载到 `ModelContext`
+  - [ ] Given 用户删 DecisionScene 下所有卡 When 触发 Then DecisionScene 本身不删
 
 ### 7.2 抽签算法决策
 
@@ -1010,19 +1010,19 @@
 
 - **类型**：标签系统
 - **触发场景**：卡片详情 / 筛选
-- **实现要点**：每个 Scene 预设 5-10 个标签（如吃啥：川菜/粤菜/快手菜/低卡/夜宵），用户可加自定义标签
+- **实现要点**：每个 DecisionScene 预设 5-10 个标签（如吃啥：川菜/粤菜/快手菜/低卡/夜宵），用户可加自定义标签
 - **验收标准**：
-  - [ ] Given 任意 Scene When 显示 Then 至少 5 个预设标签
-  - [ ] Given 用户加自定义标签 When 保存 Then 该 Scene 下可选
+  - [ ] Given 任意 DecisionScene When 显示 Then 至少 5 个预设标签
+  - [ ] Given 用户加自定义标签 When 保存 Then 该 DecisionScene 下可选
 
 ### D019 · 收藏夹组织
 
 - **类型**：收藏 UI
 - **触发场景**：「我的收藏」Tab
-- **实现要点**：按 `favoritedAt` 倒序，可选按 Scene 分组
+- **实现要点**：按 `favoritedAt` 倒序，可选按 DecisionScene 分组
 - **验收标准**：
   - [ ] Given 用户收藏 10 张 When 进入收藏 Tab Then 按时间倒序
-  - [ ] Given 用户切分组模式 When 触发 Then 按 Scene 分组
+  - [ ] Given 用户切分组模式 When 触发 Then 按 DecisionScene 分组
 
 ### 7.5 历史记录决策
 
@@ -1039,7 +1039,7 @@
 
 - **类型**：UI
 - **触发场景**：设置 → 数据 → 统计
-- **实现要点**：数字 + 饼图（按 Scene 分）+ 折线图（按周）；不引入第三方图表库（用 SwiftUI Charts）
+- **实现要点**：数字 + 饼图（按 DecisionScene 分）+ 折线图（按周）；不引入第三方图表库（用 SwiftUI Charts）
 - **验收标准**：
   - [ ] Given 用户点统计 When 显示 Then 3 类图表
   - [ ] Given 历史为空 When 显示 Then 空状态引导（D101）
@@ -1374,7 +1374,7 @@ draw(pool, context):
       
       init() {
           self.container = try! ModelContainer(
-              for: Schema([Scene.self, CardPool.self, Card.self, /* ... */]),
+              for: Schema([DecisionScene.self, CardPool.self, Card.self, /* ... */]),
               migrationPlan: xiangshaMigrationPlan.self
           )
           // 预热：触发首次 fetch（避免首 Tab 加载时耗时）
@@ -1489,7 +1489,7 @@ draw(pool, context):
   enum SchemaV1: VersionedSchema {
       static var versionIdentifier: Schema.Version = .init(1, 0, 0)
       static var models: [any PersistentModel.Type] {
-          [Scene.self, CardPool.self, Card.self, /* ... */]
+          [DecisionScene.self, CardPool.self, Card.self, /* ... */]
       }
   }
   
@@ -1497,7 +1497,7 @@ draw(pool, context):
   enum SchemaV1_1: VersionedSchema {
       static var versionIdentifier: Schema.Version = .init(1, 1, 0)
       static var models: [any PersistentModel.Type] {
-          [Scene.self, CardPool.self, Card.self /* + nutritionFacts */, /* ... */]
+          [DecisionScene.self, CardPool.self, Card.self /* + nutritionFacts */, /* ... */]
       }
   }
   
