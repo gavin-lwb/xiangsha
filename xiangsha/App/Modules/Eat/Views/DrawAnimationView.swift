@@ -95,14 +95,28 @@ struct DrawAnimationView: View {
                     .padding(.bottom, ThemeSpacing.xl)
             }
         }
-        .onAppear {
-            startAnimation()
-        }
-        .onChange(of: card) { _, newCard in
-            // result 阶段：等待 card 出现后再切到 reveal 阶段
-            if newCard != nil, stage == .loading {
-                advanceToReveal()
+        // 关键修复：每次 card 变化（包括 nil → 首个结果）都强制重启动画
+        // 用 .task(id:) 替代 onAppear + onChange，避免 SwiftUI 复用 view 时 onAppear 不触发的问题
+        .task(id: card?.id ?? UUID()) {
+            // 重置所有 stage 状态
+            emojiScale = 0.6
+            emojiOpacity = 0
+            titleOpacity = 0
+            stage = .loading
+
+            // 启动 loading 动画（旋转 + 呼吸）
+            withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                loadingScale = 1.15
             }
+            withAnimation(.linear(duration: 0.8).repeatForever(autoreverses: false)) {
+                spinAngle = 360
+            }
+
+            // 强制 loading 持续至少 800ms（即使 card 已经在）
+            try? await Task.sleep(nanoseconds: 800_000_000)
+
+            // 进入 reveal 阶段
+            advanceToReveal()
         }
     }
 
@@ -117,14 +131,6 @@ struct DrawAnimationView: View {
                     .font(.system(size: 120))
                     .rotationEffect(.degrees(spinAngle))
                     .scaleEffect(loadingScale)
-                    .onAppear {
-                        withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
-                            loadingScale = 1.15
-                        }
-                        withAnimation(.linear(duration: 0.8).repeatForever(autoreverses: false)) {
-                            spinAngle = 360
-                        }
-                    }
             } else if let card {
                 // 结果 emoji：揭幕 scale + opacity
                 Text(card.emoji ?? "🎴")
@@ -300,15 +306,6 @@ struct DrawAnimationView: View {
     }
 
     // MARK: - 动画推进
-
-    private func startAnimation() {
-        // 如果没有 card，进 loading 阶段
-        if card == nil {
-            stage = .loading
-        } else {
-            advanceToReveal()
-        }
-    }
 
     private func advanceToReveal() {
         // loading → reveal：emoji 揭幕
