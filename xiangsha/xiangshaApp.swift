@@ -15,8 +15,9 @@ struct xiangshaApp: App {
     let container: ModelContainer
 
     init() {
-        // 注册 Schema（SPEC §10.5 v1_0 modelsForSchema）
+        // 注册 Schema（SPEC §10.5 v1_3 modelsForSchema）
         // D138：使用 VersionedSchema + SchemaMigrationPlan
+        // v1.1+：UserCookedRecord（D045/D046）必须注册才能被 SwiftData 持久化
         let schema = Schema([
             DecisionScene.self,
             CardPool.self,
@@ -24,7 +25,8 @@ struct xiangshaApp: App {
             DrawRecord.self,
             UserProfile.self,
             Favorite.self,
-            UserTaskRecord.self
+            UserTaskRecord.self,
+            UserCookedRecord.self
         ])
         let modelConfig = ModelConfiguration(schema: schema)
 
