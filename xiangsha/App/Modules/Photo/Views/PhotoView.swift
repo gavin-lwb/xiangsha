@@ -220,6 +220,8 @@ private struct PhotoContentView: View {
         }
         .padding(.horizontal, ThemeSpacing.md)
         .padding(.bottom, ThemeSpacing.lg)
+        // 防止 TabBar 浮动遮挡 ScrollView 底部内容（次按钮等）
+        .safeAreaPadding(.bottom, 60)
         // Pattern 2：点击抽签结果放大详情
         .sheet(item: $detailCard) { wrapper in
             let cardID = wrapper.id
