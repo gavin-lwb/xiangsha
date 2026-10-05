@@ -36,6 +36,7 @@ struct EatView: View {
     @State private var showSettings: Bool = false
     @State private var showFavorites: Bool = false
     @State private var showHistory: Bool = false
+    @State private var showUserCardSheet: Bool = false
 
     // MARK: - 成就解锁 Toast（D097）
 
@@ -86,6 +87,15 @@ struct EatView: View {
             .navigationTitle(DecisionSceneType.eat.title)
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showUserCardSheet = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(Color.theme.accent)
+                    }
+                    .accessibilityLabel("加卡")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button {
@@ -124,6 +134,12 @@ struct EatView: View {
         }
         .sheet(isPresented: $showHistory) {
             HistoryView()
+        }
+        .sheet(isPresented: $showUserCardSheet) {
+            UserCardSheet(defaultPool: viewModel.selectedPool) { title, emoji, scenario, category in
+                viewModel.createUserCard(title: title, emoji: emoji, scenario: scenario, category: category)
+            }
+            .presentationDetents([.medium, .large])
         }
         .task {
             // D137 天气感知（v1 stub：首次进入 Tab 拉一次）
@@ -454,6 +470,9 @@ private struct EatContentView: View {
                     onStartCooking: { card in
                         detailCard = nil  // 关闭详情 sheet
                         cookingCard = card
+                    },
+                    onDelete: { card in
+                        viewModel.deleteUserCard(card)
                     }
                 )
                 .presentationDetents([.medium, .large])

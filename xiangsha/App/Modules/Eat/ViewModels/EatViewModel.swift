@@ -181,7 +181,7 @@ final class EatViewModel {
         }
         self.scene = scenes.first
 
-        // 兜底：全量 fetch CardPool，按 scene.id 过滤（避开可选链 predicate 限制）
+        // D033 · 按当前时段自动选 pool（fallback 到第一个）
         if selectedPool == nil, let scene = self.scene {
             let sceneID = scene.id
             var allPools: [CardPool] = []
@@ -190,7 +190,14 @@ final class EatViewModel {
                 if !allPools.isEmpty { break }
                 try? await Task.sleep(nanoseconds: 100_000_000)
             }
-            self.selectedPool = allPools.first { $0.scene?.id == sceneID }
+            let scenePools = allPools.filter { $0.scene?.id == sceneID }
+            let currentTime = TimeOfDay.from()
+            // 「在家做」卡池任何时段都匹配；其他时段卡池按名字前缀匹配
+            let preferred = scenePools.first { pool in
+                if pool.name == "在家做" { return true }
+                return pool.name.contains(currentTime.title)
+            } ?? scenePools.first
+            self.selectedPool = preferred
         }
     }
 
@@ -421,5 +428,56 @@ final class EatViewModel {
         modelContext.insert(record)
         try? modelContext.save()
         refreshCookedProgress()
+    }
+
+    // MARK: - 用户自定义卡（Card.isUserCreated = true）
+
+    /// 用户新增一张自定义卡
+    func createUserCard(
+        title: String,
+        emoji: String,
+        scenario: EatScenario,
+        category: String
+    ) {
+        guard let modelContext, let scene = self.scene, let pool = findOrCreateUserPool(scenario: scenario, category: category, scene: scene) else { return }
+        let card = Card(
+            title: title,
+            scene: scene,
+            pool: pool,
+            emoji: emoji,
+            category: category,
+            isUserCreated: true,
+            scenario: scenario
+        )
+        modelContext.insert(card)
+        try? modelContext.save()
+    }
+
+    /// 删除一张用户自定义卡
+    func deleteUserCard(_ card: Card) {
+        guard let modelContext, card.isUserCreated else { return }
+        modelContext.delete(card)
+        try? modelContext.save()
+    }
+
+    /// 查找或创建"用户自定义"卡池（按 scenario + category 维度）
+    private func findOrCreateUserPool(scenario: EatScenario, category: String, scene: DecisionScene) -> CardPool? {
+        guard let modelContext else { return nil }
+        let sceneID = scene.id
+        let allPools = (try? modelContext.fetch(FetchDescriptor<CardPool>())) ?? []
+        let userPools = allPools.filter { $0.scene?.id == sceneID && $0.isUserCreated }
+        let poolName = "我的 \(category)"
+        if let existing = userPools.first(where: { $0.name == poolName }) {
+            return existing
+        }
+        let pool = CardPool(
+            name: poolName,
+            icon: "person.crop.circle.fill",
+            sortOrder: 100,
+            isUserCreated: true,
+            scene: scene
+        )
+        modelContext.insert(pool)
+        return pool
     }
 }

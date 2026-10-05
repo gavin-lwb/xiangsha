@@ -20,13 +20,21 @@ struct CardDetailSheet: View {
     let card: Card
     let sceneType: DecisionSceneType
     let onStartCooking: ((Card) -> Void)?
+    let onDelete: ((Card) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
+    @State private var showDeleteConfirm: Bool = false
 
-    init(card: Card, sceneType: DecisionSceneType, onStartCooking: ((Card) -> Void)? = nil) {
+    init(
+        card: Card,
+        sceneType: DecisionSceneType,
+        onStartCooking: ((Card) -> Void)? = nil,
+        onDelete: ((Card) -> Void)? = nil
+    ) {
         self.card = card
         self.sceneType = sceneType
         self.onStartCooking = onStartCooking
+        self.onDelete = onDelete
     }
 
     var body: some View {
@@ -186,6 +194,35 @@ struct CardDetailSheet: View {
             }
             .padding(.horizontal, ThemeSpacing.lg)
             .padding(.bottom, ThemeSpacing.lg)
+
+            // 用户自定义卡删除按钮
+            if card.isUserCreated, let onDelete {
+                Button(role: .destructive) {
+                    showDeleteConfirm = true
+                } label: {
+                    Text("🗑️ 删除这张卡")
+                        .font(Font.theme.bodyEmphasis)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, ThemeSpacing.sm)
+                        .background(Color.theme.danger.opacity(0.1), in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+                        .foregroundStyle(Color.theme.danger)
+                }
+                .padding(.horizontal, ThemeSpacing.lg)
+                .padding(.bottom, ThemeSpacing.lg)
+                .confirmationDialog(
+                    "删除「\(card.displayTitle)」？",
+                    isPresented: $showDeleteConfirm,
+                    titleVisibility: .visible
+                ) {
+                    Button("删除", role: .destructive) {
+                        onDelete(card)
+                        dismiss()
+                    }
+                    Button("取消", role: .cancel) {}
+                } message: {
+                    Text("此操作不可撤销")
+                }
+            }
         }
         .background(Color.theme.background)
     }
