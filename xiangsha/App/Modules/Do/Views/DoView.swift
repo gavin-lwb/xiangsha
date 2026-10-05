@@ -212,6 +212,8 @@ private struct DoContentView: View {
         }
         .padding(.horizontal, ThemeSpacing.md)
         .padding(.bottom, ThemeSpacing.lg)
+        // 防止 TabBar 浮动遮挡 ScrollView 底部内容（次按钮等）
+        .safeAreaPadding(.bottom, 60)
         .overlay {
             // D076 完成庆祝全屏弹窗
             if viewModel.showingCelebration {
