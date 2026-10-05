@@ -25,6 +25,15 @@ struct AppSettingsView: View {
 
     @State private var debugTapCount: Int = 0
     @State private var showAllergenEditor: Bool = false
+    @State private var showOnboardingReplay: Bool = false
+    @State private var showRoadmap: Bool = false
+
+    // D091 外观偏好（@AppStorage 持久化）
+    @AppStorage("appearance.useDarkMode") private var useDarkMode: Bool = false
+    @AppStorage("appearance.showWeatherBanner") private var showWeatherBanner: Bool = true
+
+    // D092 反馈偏好
+    @AppStorage("feedback.showRatingTooltip") private var showRatingTooltip: Bool = true
 
     private static let debugUnlockTapsRequired: Int = 5
 
@@ -32,7 +41,10 @@ struct AppSettingsView: View {
         NavigationStack {
             List {
                 allergensSection
-                recommendSection
+                appearanceSection
+                feedbackSection
+                onboardingSection
+                dataSection
                 aboutSection
                 debugSection
             }
@@ -54,6 +66,14 @@ struct AppSettingsView: View {
             }
             .sheet(isPresented: $showDebugPanel) {
                 DebugPanelView()
+            }
+            .sheet(isPresented: $showOnboardingReplay) {
+                OnboardingView()
+            }
+            .sheet(isPresented: $showRoadmap) {
+                V1RoadmapSheet()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
         }
     }
@@ -89,41 +109,107 @@ struct AppSettingsView: View {
         }
     }
 
-    // MARK: - 推荐
+    // MARK: - 推荐（D091 外观）
 
-    private var recommendSection: some View {
+    private var appearanceSection: some View {
         Section {
-            HStack {
-                Image(systemName: "wand.and.stars")
-                Text("推荐口味")
-                Spacer()
-                Text("v1.1+")
-                    .font(Font.theme.caption)
-                    .foregroundStyle(Color.theme.textSecondary)
+            Toggle(isOn: $useDarkMode) {
+                Label {
+                    Text("深色模式")
+                } icon: {
+                    Image(systemName: useDarkMode ? "moon.fill" : "sun.max.fill")
+                }
             }
-            HStack {
-                Image(systemName: "clock.arrow.circlepath")
-                Text("抽签历史")
-                Spacer()
-                Text("v1.1+")
-                    .font(Font.theme.caption)
-                    .foregroundStyle(Color.theme.textSecondary)
-            }
-            HStack {
-                Image(systemName: "book.closed")
-                Text("决策日记")
-                Spacer()
-                Text("v1.1+")
-                    .font(Font.theme.caption)
-                    .foregroundStyle(Color.theme.textSecondary)
+            Toggle(isOn: $showWeatherBanner) {
+                Label {
+                    Text("天气 banner")
+                } icon: {
+                    Image(systemName: "cloud.sun.fill")
+                }
             }
         } header: {
-            Text("推荐")
+            Text("外观")
         } footer: {
-            Text("v1 推荐为多维平衡默认启用；v1.1+ 可调")
+            Text("v1 浅色固定；v1.1+ 支持系统/浅/深切换")
                 .font(Font.theme.caption)
         }
     }
+
+    // MARK: - 反馈（D092）
+
+    private var feedbackSection: some View {
+        Section {
+            Toggle(isOn: $showRatingTooltip) {
+                Label {
+                    Text("评分气泡提示")
+                } icon: {
+                    Image(systemName: "hand.tap.fill")
+                }
+            }
+        } header: {
+            Text("反馈")
+        } footer: {
+            Text("评分时弹出解释气泡（长按 emoji 0.5s 触发）")
+                .font(Font.theme.caption)
+        }
+    }
+
+    // MARK: - 重看引导（D089）
+
+    private var onboardingSection: some View {
+        Section {
+            Button {
+                showOnboardingReplay = true
+            } label: {
+                HStack {
+                    Image(systemName: "play.circle.fill")
+                        .foregroundStyle(Color.theme.accent)
+                    Text("再看一次启动引导")
+                        .foregroundStyle(Color.theme.textPrimary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.footnote)
+                        .foregroundStyle(Color.theme.textSecondary)
+                }
+            }
+        } header: {
+            Text("引导")
+        } footer: {
+            Text("第一次启动时显示的 3 屏引导，可随时再回看")
+                .font(Font.theme.caption)
+        }
+    }
+
+    // MARK: - 数据（D093）
+
+    private var dataSection: some View {
+        Section {
+            Button {
+                showRoadmap = true
+            } label: {
+                HStack {
+                    Image(systemName: "map.fill")
+                        .foregroundStyle(Color.theme.accent)
+                    Text("v1.1 Roadmap")
+                        .foregroundStyle(Color.theme.textPrimary)
+                    Spacer()
+                    Text("\(v1FutureFeatures.count) 项在路上")
+                        .font(Font.theme.caption)
+                        .foregroundStyle(Color.theme.textSecondary)
+                    Image(systemName: "chevron.right")
+                        .font(.footnote)
+                        .foregroundStyle(Color.theme.textSecondary)
+                }
+            }
+        } header: {
+            Text("数据")
+        } footer: {
+            Text("v1 之后的规划：食材反向查询 / 营养均衡 / 附近活动 / 决策日记 / Routine")
+                .font(Font.theme.caption)
+        }
+    }
+
+    private var v1FutureFeatures: [String] { ["食材查询", "营养均衡", "附近活动", "决策日记", "Routine"] }
 
     // MARK: - 关于
 
@@ -158,6 +244,17 @@ struct AppSettingsView: View {
                 Link(destination: url) {
                     HStack {
                         Text("隐私政策")
+                        Spacer()
+                        Image(systemName: "arrow.up.right.square")
+                            .foregroundStyle(Color.theme.textSecondary)
+                    }
+                }
+            }
+            // D096 反馈入口
+            if let url = URL(string: "https://github.com/fengxiaohai/xiangsha/issues") {
+                Link(destination: url) {
+                    HStack {
+                        Label("反馈 / 建议", systemImage: "exclamationmark.bubble.fill")
                         Spacer()
                         Image(systemName: "arrow.up.right.square")
                             .foregroundStyle(Color.theme.textSecondary)

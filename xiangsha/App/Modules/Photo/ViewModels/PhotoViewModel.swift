@@ -78,7 +78,27 @@ final class PhotoViewModel {
         }
     }
 
-    func accept() { lastResult = nil }
+    func accept() {
+        guard let result = lastResult, let modelContext else { lastResult = nil; return }
+        let cardID = result.card.id
+        let descriptor = FetchDescriptor<Card>(predicate: #Predicate { $0.id == cardID })
+        if let card = (try? modelContext.fetch(descriptor))?.first {
+            let record = DrawRecord(
+                card: card,
+                action: .accept,
+                candidatesBeforeFilter: result.candidatesBeforeFilter,
+                candidatesAfterFilter: result.candidatesAfterFilter,
+                fallbackUsed: result.fallbackUsed,
+                fallbackLevel: result.fallbackLevel,
+                timeOfDay: TimeOfDay.from(),
+                drawsTodayAtTime: userProfileSnapshot.drawsToday,
+                emojiRating: nil
+            )
+            modelContext.insert(record)
+            try? modelContext.save()
+        }
+        lastResult = nil
+    }
     func reject() {
         guard let result = lastResult, let modelContext else {
             lastResult = nil
@@ -161,4 +181,47 @@ final class PhotoViewModel {
     }
 
     var showsSecondaryActions: Bool { lastResult != nil }
+
+    // MARK: - 用户自定义姿势
+
+    /// 用户新增一个姿势
+    func createUserPhotoCard(title: String, emoji: String) {
+        guard let modelContext, let scene = self.scene, let pool = findOrCreateUserPhotoPool(scene: scene) else { return }
+        let card = Card(
+            title: title,
+            scene: scene,
+            pool: pool,
+            emoji: emoji,
+            category: "user_photo",
+            isUserCreated: true
+        )
+        modelContext.insert(card)
+        try? modelContext.save()
+    }
+
+    /// 删除一个用户自定义姿势
+    func deleteUserPhotoCard(_ card: Card) {
+        guard let modelContext, card.isUserCreated else { return }
+        modelContext.delete(card)
+        try? modelContext.save()
+    }
+
+    private func findOrCreateUserPhotoPool(scene: DecisionScene) -> CardPool? {
+        guard let modelContext else { return nil }
+        let sceneID = scene.id
+        let allPools = (try? modelContext.fetch(FetchDescriptor<CardPool>())) ?? []
+        let userPools = allPools.filter { $0.scene?.id == sceneID && $0.isUserCreated }
+        if let existing = userPools.first(where: { $0.name == "我的姿势" }) {
+            return existing
+        }
+        let pool = CardPool(
+            name: "我的姿势",
+            icon: "person.crop.circle.fill",
+            sortOrder: 100,
+            isUserCreated: true,
+            scene: scene
+        )
+        modelContext.insert(pool)
+        return pool
+    }
 }

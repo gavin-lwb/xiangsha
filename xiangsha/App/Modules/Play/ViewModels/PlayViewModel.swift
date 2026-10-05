@@ -51,7 +51,16 @@ final class PlayViewModel {
                 if !allPools.isEmpty { break }
                 try? await Task.sleep(nanoseconds: 100_000_000)
             }
-            self.selectedPool = allPools.first { $0.scene?.id == sceneID }
+            let scenePools = allPools.filter { $0.scene?.id == sceneID }
+            // D059 · 按当前时段自动选 pool（午后偏室外，其余按名字包含匹配）
+            let hour = Calendar.current.component(.hour, from: Date())
+            let preferred: CardPool?
+            if 14 <= hour && hour < 18 {
+                preferred = scenePools.first { $0.name.contains("室外") } ?? scenePools.first
+            } else {
+                preferred = scenePools.first { $0.name.contains("室内") } ?? scenePools.first
+            }
+            self.selectedPool = preferred
         }
     }
 
@@ -78,7 +87,28 @@ final class PlayViewModel {
         }
     }
 
-    func accept() { lastResult = nil }
+    func accept() {
+        guard let result = lastResult, let modelContext else { lastResult = nil; return }
+        // 写 DrawRecord（与 Eat 模块一致；统计 + 历史聚合）
+        let cardID = result.card.id
+        let descriptor = FetchDescriptor<Card>(predicate: #Predicate { $0.id == cardID })
+        if let card = (try? modelContext.fetch(descriptor))?.first {
+            let record = DrawRecord(
+                card: card,
+                action: .accept,
+                candidatesBeforeFilter: result.candidatesBeforeFilter,
+                candidatesAfterFilter: result.candidatesAfterFilter,
+                fallbackUsed: result.fallbackUsed,
+                fallbackLevel: result.fallbackLevel,
+                timeOfDay: TimeOfDay.from(),
+                drawsTodayAtTime: userProfileSnapshot.drawsToday,
+                emojiRating: nil
+            )
+            modelContext.insert(record)
+            try? modelContext.save()
+        }
+        lastResult = nil
+    }
     func reject() {
         guard let result = lastResult, let modelContext else {
             lastResult = nil
@@ -162,4 +192,49 @@ final class PlayViewModel {
     }
 
     var showsSecondaryActions: Bool { lastResult != nil }
+
+    // MARK: - 用户自定义玩啥卡（Card.isUserCreated = true）
+
+    /// 用户新增一个点子
+    func createUserActivityCard(title: String, emoji: String, costLevel: CostLevel) {
+        guard let modelContext, let scene = self.scene, let pool = findOrCreateUserActivityPool(scene: scene) else { return }
+        let card = Card(
+            title: title,
+            scene: scene,
+            pool: pool,
+            emoji: emoji,
+            category: "user_play",
+            isUserCreated: true,
+            costLevel: costLevel
+        )
+        modelContext.insert(card)
+        try? modelContext.save()
+    }
+
+    /// 删除一个用户自定义玩啥卡
+    func deleteUserActivityCard(_ card: Card) {
+        guard let modelContext, card.isUserCreated else { return }
+        modelContext.delete(card)
+        try? modelContext.save()
+    }
+
+    /// 查找或创建"我的点子"卡池
+    private func findOrCreateUserActivityPool(scene: DecisionScene) -> CardPool? {
+        guard let modelContext else { return nil }
+        let sceneID = scene.id
+        let allPools = (try? modelContext.fetch(FetchDescriptor<CardPool>())) ?? []
+        let userPools = allPools.filter { $0.scene?.id == sceneID && $0.isUserCreated }
+        if let existing = userPools.first(where: { $0.name == "我的点子" }) {
+            return existing
+        }
+        let pool = CardPool(
+            name: "我的点子",
+            icon: "person.crop.circle.fill",
+            sortOrder: 100,
+            isUserCreated: true,
+            scene: scene
+        )
+        modelContext.insert(pool)
+        return pool
+    }
 }

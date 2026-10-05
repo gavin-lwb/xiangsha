@@ -17,9 +17,10 @@ import SwiftData
 /// 3. App 启动时 SwiftData 自动检测 versioned 升级并迁移
 enum SchemaVersion: Int, CaseIterable {
     case v1_0 = 1
-    // v1.1+ 占位（未来加字段时启用）
-    // case v1_1 = 2  // 加 nutritionFacts（D-spec）
-    // case v1_2 = 3  // 加 DecisionJournalEntry + CardSnapshot + Routine
+    case v1_1 = 2   // Card 加 7 字段 + 新增 UserCookedRecord
+    case v1_2 = 3   // UserProfile 加 preferredCuisines
+    case v1_3 = 4   // Card 加 costLevel（D061 玩啥费用档）
+    // v1.4+ 占位
 }
 
 /// v1.0 Schema 定义
@@ -39,31 +40,95 @@ enum xiangshaSchemaV1_0: VersionedSchema {
     }
 }
 
+/// v1.1 Schema 定义（D138 · 吃啥模块补全）
+///
+/// 新增：
+/// - Card 7 字段（scenario / availableTimes / seasonWeights / cuisine / priceRange / recipe / serves）
+/// - UserCookedRecord 实体（D045/D046）
+///
+/// 迁移方式：lightweight migration（所有新字段都是 optional 或有默认值，新 model 由 SwiftData 自动建表）。
+/// 无需显式 MigrationStage closure。
+enum xiangshaSchemaV1_1: VersionedSchema {
+    static var versionIdentifier: Schema.Version { Schema.Version(1, 1, 0) }
+
+    static var models: [any PersistentModel.Type] {
+        [
+            DecisionScene.self,
+            CardPool.self,
+            Card.self,
+            DrawRecord.self,
+            UserProfile.self,
+            Favorite.self,
+            UserTaskRecord.self,
+            UserCookedRecord.self
+        ]
+    }
+}
+
+/// v1.2 Schema 定义（D138 · D027 菜系软调权）
+///
+/// 新增：
+/// - UserProfile.preferredCuisines: [Cuisine]（D027 偏好菜系，软调权）
+///
+/// 迁移方式：lightweight migration。
+enum xiangshaSchemaV1_2: VersionedSchema {
+    static var versionIdentifier: Schema.Version { Schema.Version(1, 2, 0) }
+
+    static var models: [any PersistentModel.Type] {
+        [
+            DecisionScene.self,
+            CardPool.self,
+            Card.self,
+            DrawRecord.self,
+            UserProfile.self,
+            Favorite.self,
+            UserTaskRecord.self,
+            UserCookedRecord.self
+        ]
+    }
+}
+
+/// v1.3 Schema 定义（D138 · D061 玩啥费用档）
+///
+/// 新增：
+/// - Card.costLevel: CostLevel?（D061 费用档）
+///
+/// 迁移方式：lightweight migration。
+enum xiangshaSchemaV1_3: VersionedSchema {
+    static var versionIdentifier: Schema.Version { Schema.Version(1, 3, 0) }
+
+    static var models: [any PersistentModel.Type] {
+        [
+            DecisionScene.self,
+            CardPool.self,
+            Card.self,
+            DrawRecord.self,
+            UserProfile.self,
+            Favorite.self,
+            UserTaskRecord.self,
+            UserCookedRecord.self
+        ]
+    }
+}
+
 /// Schema 迁移计划（D138）
 ///
-/// 当前：v1_0 → v1_0（无迁移）
-/// v1.1+：增加 stages 描述迁移逻辑
+/// 当前：v1_0 → v1_1 → v1_2（均为 lightweight migration）
+/// v1.3+：增加 stages 描述迁移逻辑
 ///
 /// 迁移策略（SPEC §10.5）：
-/// - v1.x 小版本：用 @Attribute(.transformable) + 懒加载
-/// - v1 → v2 大版本：写 VersionedSchema + SchemaMigrationPlan
+/// - v1.x 小版本：lightweight migration（新增 optional / 带默认值字段 + 新 model）
+/// - v1 → v2 大版本：写 VersionedSchema + SchemaMigrationPlan + 显式闭包
 enum xiangshaMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [xiangshaSchemaV1_0.self]
+        [xiangshaSchemaV1_0.self, xiangshaSchemaV1_1.self, xiangshaSchemaV1_2.self, xiangshaSchemaV1_3.self]
     }
 
     /// 迁移阶段（D138 规范）
     ///
-    /// 当前 v1_0 单版本无迁移；v1.1+ 在此加 stages。
+    /// v1_0 → v1_1 / v1_1 → v1_2 均为 SwiftData 自动 lightweight migration（无显式闭包）。
+    /// 后续 v1.x → v1.y 大改动时在此加 .migration(fromVersion:toVersion:) { context in ... } 闭包。
     static var stages: [MigrationStage] {
-        // 示例（v1.1 加 nutritionFacts 时启用）：
-        // .migration(
-        //     fromVersion: xiangshaSchemaV1_0.self,
-        //     toVersion: xiangshaSchemaV1_1.self
-        // ) { context in
-        //     // 数据迁移代码：用 v1.0 数据填充 v1.1 新增字段
-        //     // 例：Card 新增 nutritionFacts（transformable），从 metadata 提取
-        // }
         []
     }
 }
@@ -79,14 +144,3 @@ extension xiangshaMigrationPlan {
         false
     }
 }
-
-/// MARK: - v1.1+ Schema 占位（示例）
-
-// v1.1+ Schema 占位（DEBUG 时编译，避免影响 v1.0 production）
-#if DEBUG
-// v1.1 占位：等 v1.1+ 启动时填入完整 schema
-// enum xiangshaSchemaV1_1: VersionedSchema {
-//     static var versionIdentifier: Schema.Version { Schema.Version(1, 1, 0) }
-//     static var models: [any PersistentModel.Type] { [...] }
-// }
-#endif

@@ -30,6 +30,9 @@ final class UserProfile {
     /// 偏好的餐次风格 / 玩啥风格 / 拍啥风格（软调权 SPEC §A.5）
     var preferredStyles: [String]
 
+    /// 偏好菜系（D027 · 软调权；v1.1 起新增）
+    var preferredCuisines: [Cuisine]
+
     /// 偏好分类（如「菜」「汤」「主粮」）
     var preferredCategories: [String]
 
@@ -38,6 +41,9 @@ final class UserProfile {
 
     /// 今日已抽次数（D132 慢节奏上限，跨午夜重置）
     var drawsToday: Int
+
+    /// 今日最后一餐的 category（D050 餐次平衡；下次抽签 DrawEngine.mealTimeFactor 据此软调权）
+    var lastMealOfToday: String?
 
     /// 上次抽签日期（用于检测跨天重置）
     var lastDrawDate: Date?
@@ -60,15 +66,18 @@ final class UserProfile {
     init(
         allergens: [String] = [],
         preferredStyles: [String] = [],
+        preferredCuisines: [Cuisine] = [],
         preferredCategories: [String] = [],
         preferredBrands: [String] = []
     ) {
         self.id = UUID()
         self.allergens = allergens
         self.preferredStyles = preferredStyles
+        self.preferredCuisines = preferredCuisines
         self.preferredCategories = preferredCategories
         self.preferredBrands = preferredBrands
         self.drawsToday = 0
+        self.lastMealOfToday = nil
         self.lastDrawDate = nil
         self.lastResetDate = nil
         let now = Date()

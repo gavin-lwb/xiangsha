@@ -60,6 +60,9 @@ enum SeedService {
             )
             context.insert(pool)
             for spec in poolSpec.cards {
+                // 主料：spec 显式填 > 启发式推断 > nil（nil 表示不参与主料去重）
+                let mainIngredient = spec.mainIngredient ?? SeedData.inferMainIngredient(from: spec.title)
+                let metadata: [String: String]? = mainIngredient.map { ["mainIngredient": $0] }
                 let card = Card(
                     title: spec.title,
                     scene: eatScene,
@@ -69,7 +72,10 @@ enum SeedService {
                     allergens: spec.allergens,
                     difficulty: spec.difficulty,
                     timeMinutes: spec.timeMinutes,
-                    metadata: spec.metadata
+                    metadata: metadata,
+                    scenario: spec.scenario,
+                    availableTimes: spec.availableTimes,
+                    recipe: spec.recipe
                 )
                 context.insert(card)
             }
@@ -101,7 +107,8 @@ enum SeedService {
                     allergens: [],
                     difficulty: spec.difficulty,
                     timeMinutes: spec.timeMinutes,
-                    metadata: spec.metadata
+                    metadata: spec.metadata,
+                    costLevel: spec.costLevel
                 )
                 context.insert(card)
             }
@@ -210,6 +217,11 @@ private enum SeedData {
         EatPoolSpec(
             name: "夜宵", icon: "moon.stars.fill", sortOrder: 4, category: "latenight",
             cards: latenightCards
+        ),
+        // D029/D032 · 在家做（独立于时段池，覆盖全部 5 个时段）
+        EatPoolSpec(
+            name: "在家做", icon: "house.fill", sortOrder: 5, category: "homecook",
+            cards: homeCookCards
         )
     ]
 
@@ -334,6 +346,141 @@ private enum SeedData {
         EatCardSpec(title: "酸辣粉", emoji: "🍜", brand: nil, allergens: ["花生"], difficulty: 1, timeMinutes: 10),
         EatCardSpec(title: "烤脑花", emoji: "🧠", brand: nil, allergens: [], difficulty: 2, timeMinutes: 20),
         EatCardSpec(title: "麻辣香锅", emoji: "🌶️", brand: nil, allergens: ["花生"], difficulty: 3, timeMinutes: 30)
+    ]
+
+    // D029/D032 · 在家做（18 张 · 覆盖全部 5 个时段）
+    //
+    // 这些卡的 availableTimes 是 TimeOfDay.allCases，意思是任何时段都能抽到。
+    // 由用户在偏好设置 / Tab 切换时手动控制是否启用此卡池。
+    private static let homeCookCards: [EatCardSpec] = [
+        // 早餐 · 5 张
+        EatCardSpec(
+            title: "煎蛋", emoji: "🍳", brand: nil, allergens: ["鸡蛋"],
+            difficulty: 1, timeMinutes: 5,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "蛋",
+            recipe: Recipe(ingredients: ["鸡蛋 2 个", "盐少许"], steps: ["热锅", "打蛋", "煎至金黄"], cookTimeMinutes: 5, difficulty: 1)
+        ),
+        EatCardSpec(
+            title: "葱油饼", emoji: "🥞", brand: nil, allergens: ["小麦"],
+            difficulty: 2, timeMinutes: 15,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "面"
+        ),
+        EatCardSpec(
+            title: "白粥 + 咸菜", emoji: "🥣", brand: nil, allergens: [],
+            difficulty: 1, timeMinutes: 30,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "粥"
+        ),
+        EatCardSpec(
+            title: "蛋炒饭", emoji: "🍳", brand: nil, allergens: ["鸡蛋"],
+            difficulty: 1, timeMinutes: 15,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "米"
+        ),
+        EatCardSpec(
+            title: "燕麦杯", emoji: "🥣", brand: nil, allergens: ["麦"],
+            difficulty: 1, timeMinutes: 5,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "燕麦"
+        ),
+        // 午餐 · 4 张
+        EatCardSpec(
+            title: "番茄炒蛋", emoji: "🍅", brand: nil, allergens: ["鸡蛋"],
+            difficulty: 2, timeMinutes: 15,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "蛋",
+            recipe: Recipe(ingredients: ["番茄 2 个", "鸡蛋 3 个", "盐", "糖"], steps: ["番茄切块", "鸡蛋打散", "先炒蛋盛出", "炒番茄", "合在一起"], cookTimeMinutes: 15, difficulty: 2)
+        ),
+        EatCardSpec(
+            title: "麻婆豆腐（家常版）", emoji: "🌶️", brand: nil, allergens: ["大豆"],
+            difficulty: 3, timeMinutes: 25,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "豆"
+        ),
+        EatCardSpec(
+            title: "家常面条", emoji: "🍝", brand: nil, allergens: ["小麦", "鸡蛋"],
+            difficulty: 2, timeMinutes: 20,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "面"
+        ),
+        EatCardSpec(
+            title: "扬州炒饭", emoji: "🍚", brand: nil, allergens: ["鸡蛋"],
+            difficulty: 2, timeMinutes: 20,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "米"
+        ),
+        // 下午茶 · 3 张
+        EatCardSpec(
+            title: "自制水果茶", emoji: "🍓", brand: nil, allergens: [],
+            difficulty: 2, timeMinutes: 15,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "水果"
+        ),
+        EatCardSpec(
+            title: "酸奶水果杯", emoji: "🥛", brand: nil, allergens: ["奶"],
+            difficulty: 1, timeMinutes: 5,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "甜品"
+        ),
+        EatCardSpec(
+            title: "蒸蛋", emoji: "🥚", brand: nil, allergens: ["鸡蛋"],
+            difficulty: 2, timeMinutes: 15,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "蛋",
+            recipe: Recipe(ingredients: ["鸡蛋 2 个", "温水", "盐"], steps: ["蛋液加水 1:1", "过筛去泡", "中小火蒸 12 分钟"], cookTimeMinutes: 15, difficulty: 2)
+        ),
+        // 晚餐 · 5 张
+        EatCardSpec(
+            title: "红烧肉（家常版）", emoji: "🥩", brand: nil, allergens: [],
+            difficulty: 4, timeMinutes: 90,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "猪"
+        ),
+        EatCardSpec(
+            title: "糖醋里脊（家常版）", emoji: "🥩", brand: nil, allergens: ["小麦", "鸡蛋"],
+            difficulty: 3, timeMinutes: 30,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "猪"
+        ),
+        EatCardSpec(
+            title: "宫保鸡丁（家常版）", emoji: "🍗", brand: nil, allergens: ["花生", "大豆"],
+            difficulty: 3, timeMinutes: 30,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "鸡"
+        ),
+        EatCardSpec(
+            title: "青椒土豆丝", emoji: "🥔", brand: nil, allergens: [],
+            difficulty: 2, timeMinutes: 15,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "蔬"
+        ),
+        EatCardSpec(
+            title: "西红柿炒蛋", emoji: "🍅", brand: nil, allergens: ["鸡蛋"],
+            difficulty: 2, timeMinutes: 15,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "蛋"
+        ),
+        // 夜宵 · 3 张
+        EatCardSpec(
+            title: "泡面", emoji: "🍜", brand: nil, allergens: ["小麦"],
+            difficulty: 1, timeMinutes: 5,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "面"
+        ),
+        EatCardSpec(
+            title: "煎蛋夜宵", emoji: "🍳", brand: nil, allergens: ["鸡蛋"],
+            difficulty: 1, timeMinutes: 5,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "蛋"
+        ),
+        EatCardSpec(
+            title: "烤红薯（家用烤箱）", emoji: "🍠", brand: nil, allergens: [],
+            difficulty: 1, timeMinutes: 60,
+            scenario: EatScenario.homeCook, availableTimes: Array(TimeOfDay.allCases),
+            mainIngredient: "烤"
+        )
     ]
 
     // MARK: 玩啥 4 卡池 × 10 张 = 40 张
@@ -581,6 +728,139 @@ private enum SeedData {
     ]
 }
 
+// MARK: - 主料启发式推断（D054 修复）
+
+extension SeedData {
+    /// 主料关键字表（顺序敏感：长关键字在前，短关键字在后）
+    ///
+    /// 匹配规则：title.contains(pattern) 命中即返回对应 ingredient。
+    /// 例如 title = "黄焖鸡米饭" → 先命中 "黄焖鸡米饭" → "鸡"。
+    private static let mainIngredientPatterns: [(pattern: String, ingredient: String)] = [
+        // 长关键字（避免被短关键字误匹配）
+        ("金枪鱼三明治", "鱼"),
+        ("三明治套餐", "西餐"),
+        ("鸡蛋汉堡", "鸡"),
+        ("韩式炸鸡", "鸡"),
+        ("黄焖鸡米饭", "鸡"),
+        ("番茄牛腩", "牛"),
+        ("宫保鸡丁", "鸡"),
+        ("葱爆羊肉", "羊"),
+        ("糖醋里脊", "猪"),
+        ("皮蛋瘦肉粥", "粥"),
+        ("皮蛋豆腐", "豆"),
+        ("日式寿司", "鱼"),
+        ("珍珠奶茶", "奶茶"),
+        ("芒果班戟", "甜品"),
+        ("现磨豆浆", "豆"),
+        ("杨枝甘露", "甜品"),
+        ("双皮奶", "甜品"),
+        ("鸡蛋灌饼", "面"),
+        ("苦瓜炒蛋", "蔬"),
+        ("西芹百合", "蔬"),
+        ("葱油拌面", "面"),
+        ("酸辣粉", "面"),
+        ("烤冷面", "面"),
+        ("兰州拉面", "面"),
+        ("担担面", "面"),
+        ("牛肉面", "牛"),
+        ("葱油饼", "面"),
+        // 中关键字
+        ("麦当劳", "西餐"),
+        ("肯德基", "西餐"),
+        ("白切鸡", "鸡"),
+        ("三杯鸡", "鸡"),
+        ("蒸蛋", "蛋"),
+        ("茶叶蛋", "蛋"),
+        ("蛋炒饭", "米"),
+        ("蛋包饭", "米"),
+        ("牛排", "牛"),
+        ("东坡肉", "猪"),
+        ("回锅肉", "猪"),
+        ("红烧肉", "猪"),
+        ("肉夹馍", "猪"),
+        ("肉包", "面"),
+        ("卤味", "卤"),
+        ("酱牛肉", "牛"),
+        ("酸菜鱼", "鱼"),
+        ("水煮鱼", "鱼"),
+        ("麻婆豆腐", "豆"),
+        ("小笼包", "面"),
+        ("煎饺", "面"),
+        ("煎饼果子", "面"),
+        ("凉皮", "面"),
+        ("螺蛳粉", "面"),
+        ("沙县小吃", "面"),
+        ("烤肉饭", "米"),
+        ("皮蛋", "蛋"),
+        ("芝士蛋糕", "甜品"),
+        ("草莓蛋糕", "甜品"),
+        ("提拉米苏", "甜品"),
+        ("马卡龙", "甜品"),
+        ("可丽饼", "甜品"),
+        ("华夫饼", "甜品"),
+        ("冰淇淋", "甜品"),
+        ("燕麦杯", "燕麦"),
+        ("酸奶麦片", "燕麦"),
+        ("小米粥", "粥"),
+        ("白粥", "粥"),
+        ("烤鸭", "鸭"),
+        ("叉烧", "猪"),
+        // 短关键字
+        ("鸡", "鸡"),
+        ("鸭", "鸭"),
+        ("羊", "羊"),
+        ("猪", "猪"),
+        ("鱼", "鱼"),
+        ("虾", "虾"),
+        ("蟹", "蟹"),
+        ("肉", "猪"),
+        ("牛", "牛"),
+        ("豆腐", "豆"),
+        ("豆浆", "豆"),
+        ("面", "面"),
+        ("粥", "粥"),
+        ("饭", "米"),
+        ("蛋糕", "甜品"),
+        ("曲奇", "甜品"),
+        ("布丁", "甜品"),
+        ("巧克力", "甜品"),
+        ("酸奶", "甜品"),
+        ("烧烤", "烤"),
+        ("烤串", "烤"),
+        ("烤面筋", "烤"),
+        ("烤玉米", "烤"),
+        ("烤红薯", "烤"),
+        ("烤鱼", "鱼"),
+        ("奶茶", "奶茶"),
+        ("拿铁", "咖啡"),
+        ("咖啡", "咖啡"),
+        ("芒果", "水果"),
+        ("草莓", "水果"),
+        ("水果", "水果"),
+        ("坚果", "坚果"),
+        ("蔬菜", "蔬"),
+        ("披萨", "西餐"),
+        ("汉堡", "西餐"),
+        ("三明治", "西餐"),
+        ("寿司", "鱼"),
+        ("燕麦", "燕麦"),
+        ("麦片", "燕麦"),
+        ("炸鸡", "鸡"),
+        ("蛋", "蛋"),
+    ]
+
+    /// 启发式推断主料（D054 修复）
+    ///
+    /// - 返回 nil 时不参与 D054 主料去重（避免误伤主料不明确的菜如"麻辣烫""关东煮"）。
+    /// - 优先级：title 含长关键字 → 短关键字，按数组顺序第一个命中返回。
+    static func inferMainIngredient(from title: String) -> String? {
+        for entry in mainIngredientPatterns where title.contains(entry.pattern) {
+            return entry.ingredient
+        }
+        return nil
+    }
+}
+
 // MARK: - 内嵌数据 spec 类型
 
 private struct EatPoolSpec {
@@ -598,8 +878,45 @@ private struct EatCardSpec {
     let allergens: [String]
     let difficulty: Int
     let timeMinutes: Int
-    var metadata: [String: String]? {
-        ["mainIngredient": title]
+    /// 主料（可选；未填时由 seedEatCards 启发式推断）
+    ///
+    /// D054 主料去重依赖此字段。nil 表示不参与主料去重。
+    /// 旧 v1.0 默认值是 `["mainIngredient": title]`（每张卡主料都不同 = 失效），
+    /// v1.1 改为显式指定或启发式推断。
+    let mainIngredient: String?
+    /// 用餐场景（D030 · 默认 `.takeout` 因为 v1 大部分卡是外卖）
+    let scenario: EatScenario
+    /// 适用的时段列表（D032 · 默认空；「在家做」卡覆盖全部时段）
+    let availableTimes: [TimeOfDay]
+    /// 菜谱（D041 · 可选；只有「在家做」卡会填）
+    let recipe: Recipe?
+
+    /// 自定义 init：参数顺序按"业务逻辑"组织（基础字段 → 场景元数据），
+    /// 规避 Swift struct memberwise init 的"命名参数必须按字段顺序"限制。
+    ///
+    /// 所有可选参数都有默认值，调用方只需传关心的字段。
+    init(
+        title: String,
+        emoji: String? = nil,
+        brand: String? = nil,
+        allergens: [String] = [],
+        difficulty: Int = 1,
+        timeMinutes: Int = 30,
+        scenario: EatScenario = .takeout,
+        availableTimes: [TimeOfDay] = [],
+        mainIngredient: String? = nil,
+        recipe: Recipe? = nil
+    ) {
+        self.title = title
+        self.emoji = emoji
+        self.brand = brand
+        self.allergens = allergens
+        self.difficulty = difficulty
+        self.timeMinutes = timeMinutes
+        self.scenario = scenario
+        self.availableTimes = availableTimes
+        self.mainIngredient = mainIngredient
+        self.recipe = recipe
     }
 }
 
@@ -617,6 +934,8 @@ private struct PlayCardSpec {
     let difficulty: Int
     let timeMinutes: Int
     let metadata: [String: String]?
+    /// 费用档（D061 · v1.3 新增；默认 nil）
+    let costLevel: CostLevel? = nil
 }
 
 private struct DoPoolSpec {

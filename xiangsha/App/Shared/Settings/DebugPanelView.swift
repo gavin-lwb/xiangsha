@@ -19,6 +19,8 @@ struct DebugPanelView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
+    @State private var showClearUsageConfirm: Bool = false
+
     @Query(filter: #Predicate<UserProfile> { _ in true })
     private var profiles: [UserProfile]
 
@@ -86,10 +88,20 @@ struct DebugPanelView: View {
                 Label("重置今日抽签次数（D132 调试用）", systemImage: "arrow.counterclockwise.circle.fill")
                     .foregroundStyle(Color.theme.accent)
             }
+            // 用户向：保留内置数据（291 张卡 + 4 个场景），只清使用记录
+            Button(role: .destructive) {
+                showClearUsageConfirm = true
+            } label: {
+                Label("清空使用记录", systemImage: "sparkles")
+                    .foregroundStyle(Color.theme.warning)
+            }
+#if DEBUG
+            // 仅 DEBUG 可见：硬重置（删全部 + 重新种 291 张卡）
             Button(action: clearAllData) {
-                Label("清空所有数据", systemImage: "trash.fill")
+                Label("[DEV] 重置出厂数据", systemImage: "trash.fill")
                     .foregroundStyle(Color.theme.danger)
             }
+#endif
             Button(action: resetOnboarding) {
                 Label("重置启动引导", systemImage: "arrow.counterclockwise")
                     .foregroundStyle(Color.theme.accent)
@@ -101,8 +113,22 @@ struct DebugPanelView: View {
         } header: {
             Text("数据操作")
         } footer: {
-            Text("清空数据后下次启动会重新播种 291 张卡；DEBUG 模式不会被自动关闭")
-                .font(Font.theme.caption)
+            VStack(alignment: .leading, spacing: ThemeSpacing.xxs) {
+                Text("清空使用记录：保留内置卡与过敏原设置；DEBUG 模式与已解锁成就不会被重置")
+                Text("[DEV] 重置出厂：删除全部数据并重新种 291 张卡")
+            }
+            .font(Font.theme.caption)
+            .foregroundStyle(Color.theme.textSecondary)
+        }
+        .confirmationDialog(
+            "清空使用记录？",
+            isPresented: $showClearUsageConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("清空", role: .destructive, action: clearUsageData)
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("将清掉：收藏、抽签记录、任务记录、偏好（风格 / 分类 / 品牌）。\n将保留：291 张内置卡与 4 个场景、你的过敏原设置、已解锁的成就。")
         }
     }
 
@@ -120,6 +146,38 @@ struct DebugPanelView: View {
     }
 
     // MARK: - Actions
+
+    /// 清空使用记录（保留内置数据 + 过敏原 + 已解锁成就）
+    ///
+    /// 删除：
+    /// - Favorite / DrawRecord / UserTaskRecord（全部用户产生的记录）
+    /// - UserProfile 累积统计：drawsToday / lastDrawDate / lastResetDate
+    /// - UserProfile 偏好：preferredStyles / preferredCategories / preferredBrands
+    ///
+    /// 保留：
+    /// - Card / CardPool / DecisionScene（App 内置，由 SeedService 种入；isUserCreated == false）
+    /// - UserProfile.allergens（D088 安全相关，绝不动）
+    /// - UserProfile.id / createdAt / debugModeEnabled / earnedAchievements（壳子 + 状态）
+    ///
+    /// 不触发 SeedService（profile 仍在，seedIfNeeded 因 `existingProfiles == 0` 不满足而跳过）。
+    private func clearUsageData() {
+        for fav in allFavorites { modelContext.delete(fav) }
+        for rec in allDrawRecords { modelContext.delete(rec) }
+        for rec in allTaskRecords { modelContext.delete(rec) }
+
+        for profile in profiles {
+            profile.drawsToday = 0
+            profile.lastDrawDate = nil
+            profile.lastResetDate = Date()
+            profile.preferredStyles = []
+            profile.preferredCuisines = []
+            profile.preferredCategories = []
+            profile.preferredBrands = []
+            profile.updatedAt = Date()
+        }
+
+        try? modelContext.save()
+    }
 
     private func clearAllData() {
         // 删除所有数据（含 profile），让 SeedService.seedIfNeeded 触发（它检查 profile count == 0）

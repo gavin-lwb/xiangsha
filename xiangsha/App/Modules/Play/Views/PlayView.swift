@@ -19,6 +19,7 @@ struct PlayView: View {
 
     @State private var viewModel = PlayViewModel()
     @State private var pendingAchievements: [Achievement] = []
+    @State private var showUserCardSheet: Bool = false
     @Environment(\.modelContext) private var modelContext
 
     let onLinkRequest: (Card) -> Void
@@ -50,10 +51,27 @@ struct PlayView: View {
             .background(Color.theme.background)
             .navigationTitle(DecisionSceneType.play.title)
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showUserCardSheet = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(Color.theme.accent)
+                    }
+                    .accessibilityLabel("加点子")
+                }
+            }
             .overlay(alignment: .top) {
                 CelebrationToastStack(pendingAchievements: $pendingAchievements)
                     .padding(.top, ThemeSpacing.md)
             }
+        }
+        .sheet(isPresented: $showUserCardSheet) {
+            PlayUserCardSheet { title, emoji, costLevel in
+                viewModel.createUserActivityCard(title: title, emoji: emoji, costLevel: costLevel)
+            }
+            .presentationDetents([.medium])
         }
         .task {
             // ⚠️ SwiftData @Query 异步：直接用 modelContext.fetch 同步拉
@@ -96,6 +114,11 @@ private struct PlayContentView: View {
     let onFavoriteToggle: () -> Void
     let onLinkRequest: (Card) -> Void
 
+    @State private var detailCard: PlayIdentifiableUUID?
+    @State private var showComboSheet: Bool = false
+    @State private var shareCard: Card?
+    @Environment(\.modelContext) private var detailContext
+
     var body: some View {
         VStack(spacing: ThemeSpacing.lg) {
             VStack(spacing: ThemeSpacing.xs) {
@@ -120,6 +143,9 @@ private struct PlayContentView: View {
                     onToggleFavorite: {
                         viewModel.toggleFavorite()
                         onFavoriteToggle()
+                    },
+                    onTap: { cardID in
+                        detailCard = PlayIdentifiableUUID(id: cardID)
                     }
                 )
                 PlayEmojiRatingRow(
@@ -129,6 +155,25 @@ private struct PlayContentView: View {
                 if let feedback = viewModel.ratingFeedback {
                     PlayFeedbackBubble(text: feedback, onDismiss: { viewModel.clearRatingFeedback() })
                 }
+
+                // D037 · 分享按钮
+                Button {
+                    if let card = lookupCard(id: result.card.id) {
+                        shareCard = card
+                    }
+                } label: {
+                    HStack {
+                        Image(systemName: "square.and.arrow.up")
+                        Text("📤 分享给朋友")
+                    }
+                    .font(Font.theme.bodyEmphasis)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, ThemeSpacing.sm)
+                    .background(Color.theme.accentSubtle, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+                    .foregroundStyle(Color.theme.accent)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal)
 
                 // D121 跨场景联动 banner
                 if let target = CrossSceneLinkService.recommendedTarget(for: .play),
@@ -180,6 +225,36 @@ private struct PlayContentView: View {
         }
         .padding(.horizontal, ThemeSpacing.md)
         .padding(.bottom, ThemeSpacing.lg)
+        // Pattern 2：点击抽签结果放大详情
+        .sheet(item: $detailCard) { wrapper in
+            let cardID = wrapper.id
+            let descriptor = FetchDescriptor<Card>(
+                predicate: #Predicate { $0.id == cardID }
+            )
+            if let card = try? detailContext.fetch(descriptor).first {
+                CardDetailSheet(card: card, sceneType: .play)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
+            }
+        }
+        // Pattern 6：今日组合
+        .sheet(isPresented: $showComboSheet) {
+            TodayComboSheet()
+                .presentationDetents([.height(360), .medium])
+                .presentationDragIndicator(.visible)
+        }
+        // D037 · 分享卡 sheet
+        .sheet(item: $shareCard) { card in
+            ShareCardSheet(card: card)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
+    }
+
+    /// 从 modelContext 查询完整 Card（ShareCardSheet / CardDetailSheet 需要 Card 实例）
+    private func lookupCard(id: UUID) -> Card? {
+        let descriptor = FetchDescriptor<Card>(predicate: #Predicate { $0.id == id })
+        return try? detailContext.fetch(descriptor).first
     }
 }
 
@@ -218,14 +293,21 @@ private struct PlayDrawResultView: View {
     let result: DrawResult
     let isFavorite: Bool
     let onToggleFavorite: () -> Void
+    let onTap: (UUID) -> Void
 
     var body: some View {
         VStack(spacing: ThemeSpacing.md) {
             ZStack(alignment: .topTrailing) {
-                RoundedRectangle(cornerRadius: ThemeRadius.lg)
-                    .fill(Color.theme.accentSubtle)
-                    .frame(height: 240)
-                    .shadow(color: .black.opacity(0.05), radius: ThemeShadow.md)
+                // Pattern 2：整张卡片可点击放大
+                Button {
+                    onTap(result.card.id)
+                } label: {
+                    RoundedRectangle(cornerRadius: ThemeRadius.lg)
+                        .fill(Color.theme.accentSubtle)
+                        .frame(height: 240)
+                        .shadow(color: .black.opacity(0.05), radius: ThemeShadow.md)
+                }
+                .buttonStyle(.plain)
 
                 Button(action: onToggleFavorite) {
                     Image(systemName: isFavorite ? "heart.fill" : "heart")
@@ -365,4 +447,9 @@ private struct PlayFeedbackBubble: View {
             DecisionScene.self, CardPool.self, Card.self,
             DrawRecord.self, UserProfile.self, Favorite.self, UserTaskRecord.self
         ], inMemory: true)
+}
+
+/// 辅助：UUID 用于 sheet(item:) 的 Identifiable 包装
+private struct PlayIdentifiableUUID: Identifiable, Equatable {
+    let id: UUID
 }

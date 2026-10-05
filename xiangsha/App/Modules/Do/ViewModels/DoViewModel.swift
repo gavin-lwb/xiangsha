@@ -79,22 +79,35 @@ final class DoViewModel {
         }
     }
 
-    /// 接受（任务完成 D076）→ 写 UserTaskRecord(.completed)
+    /// 接受（任务完成 D076）→ 写 UserTaskRecord(.completed) + DrawRecord
     func accept() {
         guard let result = lastResult, let modelContext else { return }
         let cardID = result.card.id
 
-        // 写 UserTaskRecord
         let cardDescriptor = FetchDescriptor<Card>(predicate: #Predicate { $0.id == cardID })
         if let card = (try? modelContext.fetch(cardDescriptor))?.first {
-            let record = UserTaskRecord(
+            // 写 UserTaskRecord（D076 任务完成状态）
+            let taskRecord = UserTaskRecord(
                 taskID: card.id,
                 status: .completed,
                 noteText: nil
             )
-            // taskID 用 Card UID（v1.1+ 用专用 TaskTemplate ID）
-            record.taskID = card.id
-            modelContext.insert(record)
+            taskRecord.taskID = card.id
+            modelContext.insert(taskRecord)
+
+            // 写 DrawRecord（与 Eat/Play 一致；统一历史聚合）
+            let drawRecord = DrawRecord(
+                card: card,
+                action: .accept,
+                candidatesBeforeFilter: result.candidatesBeforeFilter,
+                candidatesAfterFilter: result.candidatesAfterFilter,
+                fallbackUsed: result.fallbackUsed,
+                fallbackLevel: result.fallbackLevel,
+                timeOfDay: TimeOfDay.from(),
+                drawsTodayAtTime: userProfileSnapshot.drawsToday,
+                emojiRating: nil
+            )
+            modelContext.insert(drawRecord)
             try? modelContext.save()
         }
 
@@ -143,5 +156,48 @@ final class DoViewModel {
     /// D076 完成庆祝文案
     var celebrationText: String {
         "你居然真的做了！🦊👏"
+    }
+
+    // MARK: - 用户自定义任务
+
+    /// 用户新增一个微任务
+    func createUserTaskCard(title: String, emoji: String, type: String) {
+        guard let modelContext, let scene = self.scene, let pool = findOrCreateUserTaskPool(scene: scene) else { return }
+        let card = Card(
+            title: title,
+            scene: scene,
+            pool: pool,
+            emoji: emoji,
+            category: type,
+            isUserCreated: true
+        )
+        modelContext.insert(card)
+        try? modelContext.save()
+    }
+
+    /// 删除一个用户自定义任务
+    func deleteUserTaskCard(_ card: Card) {
+        guard let modelContext, card.isUserCreated else { return }
+        modelContext.delete(card)
+        try? modelContext.save()
+    }
+
+    private func findOrCreateUserTaskPool(scene: DecisionScene) -> CardPool? {
+        guard let modelContext else { return nil }
+        let sceneID = scene.id
+        let allPools = (try? modelContext.fetch(FetchDescriptor<CardPool>())) ?? []
+        let userPools = allPools.filter { $0.scene?.id == sceneID && $0.isUserCreated }
+        if let existing = userPools.first(where: { $0.name == "我的任务" }) {
+            return existing
+        }
+        let pool = CardPool(
+            name: "我的任务",
+            icon: "person.crop.circle.fill",
+            sortOrder: 100,
+            isUserCreated: true,
+            scene: scene
+        )
+        modelContext.insert(pool)
+        return pool
     }
 }

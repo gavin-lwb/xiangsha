@@ -138,6 +138,7 @@ struct UserProfileSnapshot: Sendable, Hashable {
     let allergens: [String]
     let recentStyles7d: [String]
     let userPreferredStyles: [String]
+    let preferredCuisines: [Cuisine]
     let drawsToday: Int
     let lastMealOfToday: String?
     let preferredCategories: [String]
@@ -156,6 +157,7 @@ struct UserProfileSnapshot: Sendable, Hashable {
         allergens: [String] = [],
         recentStyles7d: [String] = [],
         userPreferredStyles: [String] = [],
+        preferredCuisines: [Cuisine] = [],
         drawsToday: Int = 0,
         lastMealOfToday: String? = nil,
         preferredCategories: [String] = [],
@@ -168,6 +170,7 @@ struct UserProfileSnapshot: Sendable, Hashable {
         self.allergens = allergens
         self.recentStyles7d = recentStyles7d
         self.userPreferredStyles = userPreferredStyles
+        self.preferredCuisines = preferredCuisines
         self.drawsToday = drawsToday
         self.lastMealOfToday = lastMealOfToday
         self.preferredCategories = preferredCategories
@@ -192,6 +195,7 @@ struct UserProfileSnapshot: Sendable, Hashable {
         self.allergens = profile.allergens
         self.recentStyles7d = recentStyles7d
         self.userPreferredStyles = profile.preferredStyles
+        self.preferredCuisines = profile.preferredCuisines
         self.drawsToday = profile.drawsToday
         self.lastMealOfToday = lastMealOfToday
         self.preferredCategories = profile.preferredCategories
@@ -257,6 +261,8 @@ struct DrawnCardRef: Sendable, Hashable, Identifiable {
     let mainIngredient: String?
     let isFavorite: Bool
     let createdAt: Date
+    /// 是否有菜谱（D041/D044 · UI 用此判断「看菜谱」按钮是否显示）
+    let hasRecipe: Bool
 
     init(
         id: UUID = UUID(),
@@ -268,7 +274,8 @@ struct DrawnCardRef: Sendable, Hashable, Identifiable {
         brand: String? = nil,
         mainIngredient: String? = nil,
         isFavorite: Bool = false,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        hasRecipe: Bool = false
     ) {
         self.id = id
         self.title = title
@@ -280,6 +287,7 @@ struct DrawnCardRef: Sendable, Hashable, Identifiable {
         self.mainIngredient = mainIngredient
         self.isFavorite = isFavorite
         self.createdAt = createdAt
+        self.hasRecipe = hasRecipe
     }
 
     /// 从 Card 实体构造
@@ -297,6 +305,7 @@ struct DrawnCardRef: Sendable, Hashable, Identifiable {
         self.mainIngredient = card.metadata?["mainIngredient"]
         self.isFavorite = isFavorite
         self.createdAt = card.createdAt
+        self.hasRecipe = card.recipe != nil
     }
 }
 
@@ -486,6 +495,17 @@ struct RuleBasedEngine: DrawEngine {
                 rejected = ("mainIngredientRepeat", 0.0)
             }
 
+            // T16 时段硬屏（D032 · availableTimes 不空且不含当前时段 → 排除）
+            //
+            // 「在家做」卡的 availableTimes 覆盖全部 5 个时段，永远通过；
+            // 时段池的卡 availableTimes 为空（默认），所以也通过——表示"任何时段都能抽"。
+            // 真正生效的是用户主动标 availableTimes 的卡（如"夜宵专属"卡不会被午餐抽到）。
+            if rejected == nil,
+               !card.availableTimes.isEmpty,
+               !card.availableTimes.contains(context.timeOfDay) {
+                rejected = ("timeOfDayMismatch", 0.0)
+            }
+
             if let rejected {
                 excludedFactors.append(FactorApplication(
                     factorName: rejected.name,
@@ -529,15 +549,29 @@ struct RuleBasedEngine: DrawEngine {
                 ))
             }
 
-            // T07 风格轮换（SPEC §A.5）
+            // T07 风格轮换（SPEC §A.5 · D051）
             if config.styleRotationEnabled,
                let style = card.metadata?["style"],
-               let styleF = styleFactor(style: style, recentStyles: user.recentStyles7d),
+               let styleF = styleFactor(style: style, recentStyles: user.recentStyles7d, userPreferredStyles: user.userPreferredStyles),
                styleF != 1.0 {
                 let before = weight
                 weight *= styleF
                 factors.append(FactorApplication(
                     factorName: "styleFactor",
+                    cardID: card.id,
+                    multiplierBefore: before,
+                    multiplierAfter: weight
+                ))
+            }
+
+            // T18 菜系软调权（D027 · cuisine 命中用户偏好 → ×1.3）
+            if let cuisine = card.cuisine,
+               user.preferredCuisines.contains(cuisine) {
+                let cuisineBoost = 1.3
+                let before = weight
+                weight *= cuisineBoost
+                factors.append(FactorApplication(
+                    factorName: "cuisineBoost",
                     cardID: card.id,
                     multiplierBefore: before,
                     multiplierAfter: weight
@@ -592,6 +626,23 @@ struct RuleBasedEngine: DrawEngine {
             // SPEC §A.3 时段因子：card.pool == defaultPool(timeOfDay) ? 1.0 : 0.5
             // 需要 CardPool.type 别名字段，v1.1 再加
 
+            // T14 季节软调权（D048 · seasonWeights）
+            //
+            // 若 Card.seasonWeights 显式填了当前季节的权重（>0 且 ≠1），就应用。
+            // 例：冬天吃火锅 ×1.5、夏天吃冰品 ×1.3。
+            if let weights = card.seasonWeights,
+               let seasonWeight = weights[Season.current(date: context.now)],
+               seasonWeight != 1.0 {
+                let before = weight
+                weight *= seasonWeight
+                factors.append(FactorApplication(
+                    factorName: "seasonWeight",
+                    cardID: card.id,
+                    multiplierBefore: before,
+                    multiplierAfter: weight
+                ))
+            }
+
             let ref = DrawnCardRef(from: card, isFavorite: false)
             return (ref, weight, factors)
         }
@@ -619,12 +670,20 @@ struct RuleBasedEngine: DrawEngine {
         }
     }
 
-    // MARK: - 风格轮换（SPEC §A.5）
+    // MARK: - 风格轮换（SPEC §A.5 · D051）
 
-    private func styleFactor(style: String, recentStyles: [String]) -> Double? {
-        // v1 简化版：仅检查 recentStyles，未接入 preferredStyles 完整逻辑（D005 SPEC §A.5）
+    /// 风格软调权（D051）
+    ///
+    /// - 7d 内抽过该 style → ×0.7（避免连续推荐同一风格）
+    /// - 用户偏好列表里有该 style → ×1.5（加强偏好）
+    /// - 两边都没有 → 1.0（中性）
+    /// - 同时命中 → 取较小值（recentStyles 0.7 优先，因为"最近吃过"比"曾经偏好"更强烈）
+    private func styleFactor(style: String, recentStyles: [String], userPreferredStyles: [String]) -> Double? {
         if recentStyles.contains(style) {
             return 0.7
+        }
+        if userPreferredStyles.contains(style) {
+            return 1.5
         }
         return 1.0
     }
