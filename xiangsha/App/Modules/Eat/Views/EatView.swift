@@ -257,130 +257,17 @@ private struct EatContentView: View {
                     showRoadmapSheet = true
                 }
 
-                // 主展示区
-                if let result = viewModel.lastResult {
-                    // D092 · 首抽引导气泡（仅首次显示）
-                    if showFirstDrawHint {
-                        FirstDrawHintBubble(onDismiss: {
-                            showFirstDrawHint = false
-                            FirstDrawHintStore.markSeen()
-                        })
-                        .transition(.scale.combined(with: .opacity))
-                    }
+                // 主展示区（首页只做筛选，结果详情都在 DrawAnimationView 全屏页里）
+                // D092 · 首抽引导气泡（仅首次显示）
+                if showFirstDrawHint, viewModel.lastResult == nil {
+                    FirstDrawHintBubble(onDismiss: {
+                        showFirstDrawHint = false
+                        FirstDrawHintStore.markSeen()
+                    })
+                    .transition(.scale.combined(with: .opacity))
+                }
 
-                    DrawResultView(
-                        result: result,
-                        isFavorite: viewModel.isCurrentFavorite,
-                        onToggleFavorite: { viewModel.toggleFavorite() },
-                        onTap: { cardID in
-                            detailCard = IdentifiableUUID(id: cardID)
-                        }
-                    )
-
-                    // D135 3 emoji 评分
-                    EmojiRatingRow(
-                        currentRating: viewModel.currentRating,
-                        onRate: { emoji in viewModel.rate(emoji: emoji) }
-                    )
-
-                    // D044/D045 · 在家做菜动作区（仅 hasRecipe 时显示「看菜谱」）
-                    if result.card.hasRecipe {
-                        Button {
-                            cookingCard = lookupCard(id: result.card.id)
-                        } label: {
-                            HStack {
-                                Image(systemName: "book.closed.fill")
-                                Text("🍳 看菜谱 / 开始做")
-                            }
-                            .font(Font.theme.bodyEmphasis)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, ThemeSpacing.sm)
-                            .background(Color.theme.accentSubtle, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
-                            .foregroundStyle(Color.theme.accent)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.horizontal)
-                    }
-
-                    // D045 · 「✅ 我做过」按钮
-                    if !viewModel.cookedCardIDs.contains(result.card.id) {
-                        Button {
-                            if let card = lookupCard(id: result.card.id) {
-                                viewModel.markCooked(card: card)
-                            }
-                        } label: {
-                            HStack {
-                                Image(systemName: "checkmark.circle")
-                                Text("✅ 我做过")
-                            }
-                            .font(Font.theme.bodyEmphasis)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, ThemeSpacing.sm)
-                            .background(Color.theme.success.opacity(0.1), in: RoundedRectangle(cornerRadius: ThemeRadius.md))
-                            .foregroundStyle(Color.theme.success)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.horizontal)
-                    } else {
-                        HStack(spacing: ThemeSpacing.xs) {
-                            Image(systemName: "checkmark.seal.fill")
-                                .foregroundStyle(Color.theme.success)
-                            Text("已做过")
-                                .font(Font.theme.caption)
-                                .foregroundStyle(Color.theme.textSecondary)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, ThemeSpacing.sm)
-                    }
-
-                    // D037/D038 · 「📤 分享」按钮
-                    Button {
-                        if let card = lookupCard(id: result.card.id) {
-                            shareCard = card
-                        }
-                    } label: {
-                        HStack {
-                            Image(systemName: "square.and.arrow.up")
-                            Text("📤 分享给朋友")
-                        }
-                        .font(Font.theme.bodyEmphasis)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, ThemeSpacing.sm)
-                        .background(Color.theme.accentSubtle, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
-                        .foregroundStyle(Color.theme.accent)
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.horizontal)
-
-                    // 评分反馈气泡
-                    if let feedback = viewModel.ratingFeedback {
-                        RatingFeedbackBubble(
-                            text: feedback,
-                            onDismiss: { viewModel.clearRatingFeedback() }
-                        )
-                    }
-
-                    // D121 跨场景联动 banner
-                    if let target = CrossSceneLinkService.recommendedTarget(for: .eat),
-                       let context = viewModel.modelContext,
-                       let recommend = CrossSceneLinkService.recommendCard(target: target, context: context) {
-                        CrossSceneBanner(
-                            sourceScene: .eat,
-                            targetScene: target,
-                            suggestedCardTitle: recommend.title,
-                            suggestedCardEmoji: recommend.emoji,
-                            onTap: { onLinkRequest(recommend) }
-                        )
-                    }
-
-                    // L2 过敏警告 banner（D088）
-                    if viewModel.showingAllergenWarning {
-                        AllergenWarningBanner(
-                            onAccept: { viewModel.accept() },
-                            onRedraw: { Task { await viewModel.redraw() } }
-                        )
-                    }
-                } else if viewModel.showingNoDecisionPanel {
+                if viewModel.showingNoDecisionPanel {
                     // D134 不决策模式面板
                     NoDecisionPanel(
                         onAction: { action in
@@ -394,50 +281,8 @@ private struct EatContentView: View {
                 } else if let error = viewModel.error {
                     DrawErrorView(error: error, onDismiss: { viewModel.dismissError() })
                 } else {
+                    // 首页主区：空状态（结果详情在 DrawAnimationView 全屏页里）
                     EmptyDrawStateView()
-                }
-
-                // 次按钮（结果存在时显示）
-                if viewModel.showsSecondaryActions {
-                    HStack(spacing: ThemeSpacing.md) {
-                        SecondaryActionButton(
-                            title: "换一签 🔁",
-                            action: { Task { await viewModel.redraw() } }
-                        )
-                        SecondaryActionButton(
-                            title: "拒绝 🙅",
-                            action: { viewModel.reject() }
-                        )
-                    }
-                    .padding(.horizontal)
-
-                    // D052 破例按钮（L2 过敏警告时显示：含过敏原也要）
-                    if viewModel.showingAllergenWarning {
-                        Button {
-                            viewModel.accept()
-                            onAcceptComplete()
-                        } label: {
-                            HStack(spacing: ThemeSpacing.xs) {
-                                Image(systemName: "exclamationmark.shield.fill")
-                                Text("💪 我就要这个（破例）")
-                            }
-                            .font(Font.theme.bodyEmphasis)
-                            .foregroundStyle(Color.theme.warning)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, ThemeSpacing.sm)
-                            .background(
-                                Color.theme.warning.opacity(0.1),
-                                in: RoundedRectangle(cornerRadius: ThemeRadius.md)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: ThemeRadius.md)
-                                    .stroke(Color.theme.warning.opacity(0.4), lineWidth: 1)
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.horizontal)
-                        .padding(.top, ThemeSpacing.xs)
-                    }
                 }
 
                 // 底部留白
@@ -469,6 +314,7 @@ private struct EatContentView: View {
             DrawAnimationView(
                 card: drawAnimationCard,
                 isLoading: viewModel.isLoading && viewModel.lastResult == nil,
+                isCooked: drawAnimationCard.map { viewModel.cookedCardIDs.contains($0.id) } ?? false,
                 onAccept: {
                     viewModel.accept()
                     onAcceptComplete()
@@ -476,8 +322,21 @@ private struct EatContentView: View {
                 onReject: {
                     Task { await viewModel.redraw() }
                 },
-                onRedraw: {
-                    Task { await viewModel.redraw() }
+                onRate: { emoji in viewModel.rate(emoji: emoji) },
+                onMarkCooked: {
+                    if let card = drawAnimationCard {
+                        viewModel.markCooked(card: card)
+                    }
+                },
+                onShare: {
+                    if let card = drawAnimationCard {
+                        shareCard = card
+                    }
+                },
+                onCookRecipe: {
+                    if let card = drawAnimationCard {
+                        cookingCard = card
+                    }
                 },
                 onDismiss: {
                     showDrawAnimation = false
