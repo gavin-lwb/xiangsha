@@ -394,12 +394,13 @@ final class EatViewModel {
 
     var primaryButtonText: String {
         if isLoading { return "让小狐狸想想……🦊" }
-        if lastResult != nil { return "就这个了 ✅" }
+        if lastResult != nil { return "换一个 🔁" }
         return "抽一个试试"
     }
 
+    /// 主 Tab 不再显示次按钮（结果详情在 DrawAnimationView 全屏页里）
     var showsSecondaryActions: Bool {
-        lastResult != nil
+        false
     }
 
     // MARK: - D045/D046 烹饪进度
