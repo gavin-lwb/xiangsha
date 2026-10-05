@@ -19,6 +19,7 @@ struct DoView: View {
 
     @State private var viewModel = DoViewModel()
     @State private var pendingAchievements: [Achievement] = []
+    @State private var showUserCardSheet: Bool = false
     @Environment(\.modelContext) private var modelContext
 
     let onLinkRequest: (Card) -> Void
@@ -48,10 +49,27 @@ struct DoView: View {
             .background(Color.theme.background)
             .navigationTitle(DecisionSceneType.task.title)
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showUserCardSheet = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(Color.theme.accent)
+                    }
+                    .accessibilityLabel("加任务")
+                }
+            }
             .overlay(alignment: .top) {
                 CelebrationToastStack(pendingAchievements: $pendingAchievements)
                     .padding(.top, ThemeSpacing.md)
             }
+        }
+        .sheet(isPresented: $showUserCardSheet) {
+            DoUserCardSheet { title, emoji, type in
+                viewModel.createUserTaskCard(title: title, emoji: emoji, type: type)
+            }
+            .presentationDetents([.medium])
         }
         .task {
             // ⚠️ SwiftData @Query 异步：直接用 modelContext.fetch 同步拉
@@ -93,6 +111,11 @@ private struct DoContentView: View {
     let onAcceptComplete: () -> Void
     let onLinkRequest: (Card) -> Void
 
+    @State private var detailCard: DoIdentifiableUUID?
+    @State private var showComboSheet: Bool = false
+    @State private var shareCard: Card?
+    @Environment(\.modelContext) private var detailContext
+
     var body: some View {
         VStack(spacing: ThemeSpacing.lg) {
             VStack(spacing: ThemeSpacing.xs) {
@@ -112,7 +135,13 @@ private struct DoContentView: View {
             .padding(.top, ThemeSpacing.md)
 
             if let result = viewModel.lastResult {
-                DoDrawResultView(result: result, celebrationText: viewModel.celebrationText)
+                DoDrawResultView(
+                    result: result,
+                    celebrationText: viewModel.celebrationText,
+                    onTap: { cardID in
+                        detailCard = DoIdentifiableUUID(id: cardID)
+                    }
+                )
 
                 // D121 跨场景联动 banner（做啥 → 吃啥犒劳）
                 if let target = CrossSceneLinkService.recommendedTarget(for: .task),
@@ -126,6 +155,25 @@ private struct DoContentView: View {
                         onTap: { onLinkRequest(recommend) }
                     )
                 }
+
+                // D037 · 分享按钮
+                Button {
+                    if let card = lookupCard(id: result.card.id) {
+                        shareCard = card
+                    }
+                } label: {
+                    HStack {
+                        Image(systemName: "square.and.arrow.up")
+                        Text("📤 分享给朋友")
+                    }
+                    .font(Font.theme.bodyEmphasis)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, ThemeSpacing.sm)
+                    .background(Color.theme.accentSubtle, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+                    .foregroundStyle(Color.theme.accent)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal)
             } else if let error = viewModel.error {
                 DoDrawErrorView(error: error, onDismiss: { viewModel.dismissError() })
             } else {
@@ -173,6 +221,33 @@ private struct DoContentView: View {
                 )
             }
         }
+        // Pattern 2：点击抽签结果放大详情
+        .sheet(item: $detailCard) { wrapper in
+            let cardID = wrapper.id
+            let descriptor = FetchDescriptor<Card>(predicate: #Predicate { $0.id == cardID })
+            if let card = try? detailContext.fetch(descriptor).first {
+                CardDetailSheet(card: card, sceneType: .task)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
+            }
+        }
+        // D037 · 分享卡 sheet
+        .sheet(item: $shareCard) { card in
+            ShareCardSheet(card: card)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
+        // Pattern 6：今日组合
+        .sheet(isPresented: $showComboSheet) {
+            TodayComboSheet()
+                .presentationDetents([.height(360), .medium])
+                .presentationDragIndicator(.visible)
+        }
+    }
+
+    private func lookupCard(id: UUID) -> Card? {
+        let descriptor = FetchDescriptor<Card>(predicate: #Predicate { $0.id == id })
+        return try? detailContext.fetch(descriptor).first
     }
 }
 
@@ -223,14 +298,21 @@ private struct CompletionCelebration: View {
 private struct DoDrawResultView: View {
     let result: DrawResult
     let celebrationText: String
+    let onTap: (UUID) -> Void
 
     var body: some View {
         VStack(spacing: ThemeSpacing.md) {
             ZStack {
-                RoundedRectangle(cornerRadius: ThemeRadius.lg)
-                    .fill(Color.theme.success.opacity(0.15))
-                    .frame(height: 280)
-                    .shadow(color: .black.opacity(0.05), radius: ThemeShadow.md)
+                // Pattern 2：整张卡片可点击放大
+                Button {
+                    onTap(result.card.id)
+                } label: {
+                    RoundedRectangle(cornerRadius: ThemeRadius.lg)
+                        .fill(Color.theme.success.opacity(0.15))
+                        .frame(height: 280)
+                        .shadow(color: .black.opacity(0.05), radius: ThemeShadow.md)
+                }
+                .buttonStyle(.plain)
 
                 VStack(spacing: ThemeSpacing.md) {
                     Text(result.card.emoji ?? "✅").font(.system(size: 80))
@@ -316,4 +398,9 @@ private struct SecondaryDoButton: View {
             DecisionScene.self, CardPool.self, Card.self,
             DrawRecord.self, UserProfile.self, Favorite.self, UserTaskRecord.self
         ], inMemory: true)
+}
+
+/// 辅助：UUID 用于 sheet(item:) 的 Identifiable 包装
+private struct DoIdentifiableUUID: Identifiable, Equatable {
+    let id: UUID
 }
