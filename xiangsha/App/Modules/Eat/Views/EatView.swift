@@ -394,20 +394,6 @@ private struct EatContentView: View {
                     EmptyDrawStateView()
                 }
 
-                // 主按钮
-                PrimaryActionButton(
-                    title: viewModel.primaryButtonText,
-                    isLoading: viewModel.isLoading,
-                    action: {
-                        if viewModel.lastResult != nil {
-                            viewModel.accept()
-                            onAcceptComplete()
-                        } else {
-                            Task { await viewModel.draw() }
-                        }
-                    }
-                )
-
                 // 次按钮（结果存在时显示）
                 if viewModel.showsSecondaryActions {
                     HStack(spacing: ThemeSpacing.md) {
@@ -457,8 +443,24 @@ private struct EatContentView: View {
             .padding(.horizontal, ThemeSpacing.md)
             .padding(.bottom, ThemeSpacing.lg)
         }
-        // 防止 TabBar 浮动遮挡 ScrollView 底部内容
-        .safeAreaPadding(.bottom, 60)
+        // 主按钮 sticky bottom — 永远可见不被 TabBar 遮挡
+        .safeAreaInset(edge: .bottom) {
+            PrimaryActionButton(
+                title: viewModel.primaryButtonText,
+                isLoading: viewModel.isLoading,
+                action: {
+                    if viewModel.lastResult != nil {
+                        viewModel.accept()
+                        onAcceptComplete()
+                    } else {
+                        Task { await viewModel.draw() }
+                    }
+                }
+            )
+            .padding(.horizontal)
+            .padding(.bottom, ThemeSpacing.sm)
+            .background(.thinMaterial)
+        }
         // Pattern 2：点击抽签结果放大详情
         .sheet(item: $detailCard) { wrapper in
             let cardID = wrapper.id
