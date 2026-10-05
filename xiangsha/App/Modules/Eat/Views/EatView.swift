@@ -219,6 +219,7 @@ private struct EatContentView: View {
     // 抽取动画全屏页（UX 改进）
     @State private var showDrawAnimation: Bool = false
     @State private var drawAnimationCard: Card?
+    @State private var drawAnimationIsLoading: Bool = true
     // D047/D056：v1.1 roadmap sheet
     @State private var showRoadmapSheet: Bool = false
 
@@ -311,18 +312,10 @@ private struct EatContentView: View {
         }
         // UX 改进：抽取动画全屏页
         .fullScreenCover(isPresented: $showDrawAnimation) {
-            // 实时计算 card（不用 @State 同步，避免 onChange 多次触发警告）
-            let currentCard: Card? = {
-                if let drawAnimationCard { return drawAnimationCard }
-                if let result = viewModel.lastResult {
-                    return lookupCard(id: result.card.id)
-                }
-                return nil
-            }()
             DrawAnimationView(
-                card: currentCard,
-                isLoading: viewModel.isLoading && currentCard == nil,
-                isCooked: currentCard.map { viewModel.cookedCardIDs.contains($0.id) } ?? false,
+                card: drawAnimationCard,
+                isLoading: drawAnimationIsLoading && drawAnimationCard == nil,
+                isCooked: drawAnimationCard.map { viewModel.cookedCardIDs.contains($0.id) } ?? false,
                 onAccept: {
                     viewModel.accept()
                     onAcceptComplete()
@@ -332,17 +325,17 @@ private struct EatContentView: View {
                 },
                 onRate: { emoji in viewModel.rate(emoji: emoji) },
                 onMarkCooked: {
-                    if let card = currentCard {
+                    if let card = drawAnimationCard {
                         viewModel.markCooked(card: card)
                     }
                 },
                 onShare: {
-                    if let card = currentCard {
+                    if let card = drawAnimationCard {
                         shareCard = card
                     }
                 },
                 onCookRecipe: {
-                    if let card = currentCard {
+                    if let card = drawAnimationCard {
                         cookingCard = card
                     }
                 },
@@ -351,6 +344,16 @@ private struct EatContentView: View {
                     drawAnimationCard = nil
                 }
             )
+        }
+        // 关键：监听 viewModel.lastResult 变化（draw() 完成），同步 card + isLoading 给动画页
+        // 用 .task(id:) 避免 onChange 多次触发警告（task 内部 setState 只触发一次）
+        .task(id: viewModel.lastResult?.card.id) {
+            if let result = viewModel.lastResult {
+                drawAnimationCard = lookupCard(id: result.card.id)
+                drawAnimationIsLoading = false
+            } else if viewModel.isLoading {
+                drawAnimationIsLoading = true
+            }
         }
         // Pattern 2：点击抽签结果放大详情
         .sheet(item: $detailCard) { wrapper in
