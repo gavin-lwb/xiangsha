@@ -195,6 +195,19 @@ private struct PlayContentView: View {
 
             Spacer()
 
+            // 次按钮
+            if viewModel.showsSecondaryActions {
+                HStack(spacing: ThemeSpacing.md) {
+                    PlaySecondaryButton(title: "换一个 🔁", action: { Task { await viewModel.redraw() } })
+                    PlaySecondaryButton(title: "拒绝 🙅", action: { viewModel.reject() })
+                }
+                .padding(.horizontal)
+            }
+        }
+        .padding(.horizontal, ThemeSpacing.md)
+        .padding(.bottom, ThemeSpacing.lg)
+        // 主按钮 sticky bottom — 永远可见不被 TabBar 遮挡
+        .safeAreaInset(edge: .bottom) {
             Button(action: {
                 if viewModel.lastResult != nil {
                     viewModel.accept()
@@ -214,19 +227,9 @@ private struct PlayContentView: View {
             }
             .disabled(viewModel.isLoading)
             .padding(.horizontal)
-
-            if viewModel.showsSecondaryActions {
-                HStack(spacing: ThemeSpacing.md) {
-                    PlaySecondaryButton(title: "换一个 🔁", action: { Task { await viewModel.redraw() } })
-                    PlaySecondaryButton(title: "拒绝 🙅", action: { viewModel.reject() })
-                }
-                .padding(.horizontal)
-            }
+            .padding(.bottom, ThemeSpacing.sm)
+            .background(.thinMaterial)
         }
-        .padding(.horizontal, ThemeSpacing.md)
-        .padding(.bottom, ThemeSpacing.lg)
-        // 防止 TabBar 浮动遮挡 ScrollView 底部内容（次按钮等）
-        .safeAreaPadding(.bottom, 60)
         // Pattern 2：点击抽签结果放大详情
         .sheet(item: $detailCard) { wrapper in
             let cardID = wrapper.id
