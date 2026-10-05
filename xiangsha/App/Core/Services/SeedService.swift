@@ -107,7 +107,8 @@ enum SeedService {
                     allergens: [],
                     difficulty: spec.difficulty,
                     timeMinutes: spec.timeMinutes,
-                    metadata: spec.metadata
+                    metadata: spec.metadata,
+                    costLevel: spec.costLevel
                 )
                 context.insert(card)
             }
@@ -933,6 +934,8 @@ private struct PlayCardSpec {
     let difficulty: Int
     let timeMinutes: Int
     let metadata: [String: String]?
+    /// 费用档（D061 · v1.3 新增；默认 nil）
+    let costLevel: CostLevel? = nil
 }
 
 private struct DoPoolSpec {

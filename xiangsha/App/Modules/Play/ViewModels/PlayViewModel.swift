@@ -78,7 +78,28 @@ final class PlayViewModel {
         }
     }
 
-    func accept() { lastResult = nil }
+    func accept() {
+        guard let result = lastResult, let modelContext else { lastResult = nil; return }
+        // 写 DrawRecord（与 Eat 模块一致；统计 + 历史聚合）
+        let cardID = result.card.id
+        let descriptor = FetchDescriptor<Card>(predicate: #Predicate { $0.id == cardID })
+        if let card = (try? modelContext.fetch(descriptor))?.first {
+            let record = DrawRecord(
+                card: card,
+                action: .accept,
+                candidatesBeforeFilter: result.candidatesBeforeFilter,
+                candidatesAfterFilter: result.candidatesAfterFilter,
+                fallbackUsed: result.fallbackUsed,
+                fallbackLevel: result.fallbackLevel,
+                timeOfDay: TimeOfDay.from(),
+                drawsTodayAtTime: userProfileSnapshot.drawsToday,
+                emojiRating: nil
+            )
+            modelContext.insert(record)
+            try? modelContext.save()
+        }
+        lastResult = nil
+    }
     func reject() {
         guard let result = lastResult, let modelContext else {
             lastResult = nil

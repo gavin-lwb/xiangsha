@@ -96,6 +96,10 @@ private struct PlayContentView: View {
     let onFavoriteToggle: () -> Void
     let onLinkRequest: (Card) -> Void
 
+    @State private var detailCard: PlayIdentifiableUUID?
+    @State private var showComboSheet: Bool = false
+    @Environment(\.modelContext) private var detailContext
+
     var body: some View {
         VStack(spacing: ThemeSpacing.lg) {
             VStack(spacing: ThemeSpacing.xs) {
@@ -120,6 +124,9 @@ private struct PlayContentView: View {
                     onToggleFavorite: {
                         viewModel.toggleFavorite()
                         onFavoriteToggle()
+                    },
+                    onTap: { cardID in
+                        detailCard = PlayIdentifiableUUID(id: cardID)
                     }
                 )
                 PlayEmojiRatingRow(
@@ -180,6 +187,24 @@ private struct PlayContentView: View {
         }
         .padding(.horizontal, ThemeSpacing.md)
         .padding(.bottom, ThemeSpacing.lg)
+        // Pattern 2：点击抽签结果放大详情
+        .sheet(item: $detailCard) { wrapper in
+            let cardID = wrapper.id
+            let descriptor = FetchDescriptor<Card>(
+                predicate: #Predicate { $0.id == cardID }
+            )
+            if let card = try? detailContext.fetch(descriptor).first {
+                CardDetailSheet(card: card, sceneType: .play)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
+            }
+        }
+        // Pattern 6：今日组合
+        .sheet(isPresented: $showComboSheet) {
+            TodayComboSheet()
+                .presentationDetents([.height(360), .medium])
+                .presentationDragIndicator(.visible)
+        }
     }
 }
 
@@ -218,14 +243,21 @@ private struct PlayDrawResultView: View {
     let result: DrawResult
     let isFavorite: Bool
     let onToggleFavorite: () -> Void
+    let onTap: (UUID) -> Void
 
     var body: some View {
         VStack(spacing: ThemeSpacing.md) {
             ZStack(alignment: .topTrailing) {
-                RoundedRectangle(cornerRadius: ThemeRadius.lg)
-                    .fill(Color.theme.accentSubtle)
-                    .frame(height: 240)
-                    .shadow(color: .black.opacity(0.05), radius: ThemeShadow.md)
+                // Pattern 2：整张卡片可点击放大
+                Button {
+                    onTap(result.card.id)
+                } label: {
+                    RoundedRectangle(cornerRadius: ThemeRadius.lg)
+                        .fill(Color.theme.accentSubtle)
+                        .frame(height: 240)
+                        .shadow(color: .black.opacity(0.05), radius: ThemeShadow.md)
+                }
+                .buttonStyle(.plain)
 
                 Button(action: onToggleFavorite) {
                     Image(systemName: isFavorite ? "heart.fill" : "heart")
@@ -365,4 +397,9 @@ private struct PlayFeedbackBubble: View {
             DecisionScene.self, CardPool.self, Card.self,
             DrawRecord.self, UserProfile.self, Favorite.self, UserTaskRecord.self
         ], inMemory: true)
+}
+
+/// 辅助：UUID 用于 sheet(item:) 的 Identifiable 包装
+private struct PlayIdentifiableUUID: Identifiable, Equatable {
+    let id: UUID
 }

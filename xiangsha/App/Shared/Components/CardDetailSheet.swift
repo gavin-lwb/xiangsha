@@ -92,6 +92,9 @@ struct CardDetailSheet: View {
                             DetailRow(icon: "person.2.fill", label: "适合人数", value: "\(serves) 人")
                         }
                         DetailRow(icon: "calendar", label: "加入日期", value: card.createdAt.formatted(date: .abbreviated, time: .omitted))
+                        if let cost = card.costLevel {
+                            DetailRow(icon: "creditcard.fill", label: "费用", value: "\(cost.emoji) \(cost.title)")
+                        }
                     }
                     .padding(.horizontal, ThemeSpacing.lg)
 

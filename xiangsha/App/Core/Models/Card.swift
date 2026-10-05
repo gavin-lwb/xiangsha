@@ -103,6 +103,9 @@ final class Card {
     /// 适合几人份（D055 · 可选；未设置 = UI 不显示「🍽️ 适合 X 人」）
     var serves: Int?
 
+    /// 费用档（D061 · 可选；玩啥必填，吃啥/做啥/拍啥可不填）
+    var costLevel: CostLevel?
+
     /// 所属场景（n → 1）
     ///
     /// 当 DecisionScene 删除时，本卡 sceneID 保留（denormalized）但本引用置空。
@@ -133,7 +136,8 @@ final class Card {
         cuisine: Cuisine? = nil,
         priceRange: PriceRange? = nil,
         recipe: Recipe? = nil,
-        serves: Int? = nil
+        serves: Int? = nil,
+        costLevel: CostLevel? = nil
     ) {
         self.id = UUID()
         self.title = title
@@ -161,6 +165,7 @@ final class Card {
         self.priceRange = priceRange
         self.recipe = recipe
         self.serves = serves
+        self.costLevel = costLevel
         self.scene = scene
         self.pool = pool
     }

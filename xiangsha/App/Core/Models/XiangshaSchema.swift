@@ -18,9 +18,9 @@ import SwiftData
 enum SchemaVersion: Int, CaseIterable {
     case v1_0 = 1
     case v1_1 = 2   // Card 加 7 字段 + 新增 UserCookedRecord
-    case v1_2 = 3   // UserProfile 加 preferredCuisines（D027 软调权）
-    // v1.3+ 占位
-    // case v1_3 = 4  // 加 DecisionJournalEntry + CardSnapshot + Routine
+    case v1_2 = 3   // UserProfile 加 preferredCuisines
+    case v1_3 = 4   // Card 加 costLevel（D061 玩啥费用档）
+    // v1.4+ 占位
 }
 
 /// v1.0 Schema 定义
@@ -88,6 +88,29 @@ enum xiangshaSchemaV1_2: VersionedSchema {
     }
 }
 
+/// v1.3 Schema 定义（D138 · D061 玩啥费用档）
+///
+/// 新增：
+/// - Card.costLevel: CostLevel?（D061 费用档）
+///
+/// 迁移方式：lightweight migration。
+enum xiangshaSchemaV1_3: VersionedSchema {
+    static var versionIdentifier: Schema.Version { Schema.Version(1, 3, 0) }
+
+    static var models: [any PersistentModel.Type] {
+        [
+            DecisionScene.self,
+            CardPool.self,
+            Card.self,
+            DrawRecord.self,
+            UserProfile.self,
+            Favorite.self,
+            UserTaskRecord.self,
+            UserCookedRecord.self
+        ]
+    }
+}
+
 /// Schema 迁移计划（D138）
 ///
 /// 当前：v1_0 → v1_1 → v1_2（均为 lightweight migration）
@@ -98,7 +121,7 @@ enum xiangshaSchemaV1_2: VersionedSchema {
 /// - v1 → v2 大版本：写 VersionedSchema + SchemaMigrationPlan + 显式闭包
 enum xiangshaMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [xiangshaSchemaV1_0.self, xiangshaSchemaV1_1.self, xiangshaSchemaV1_2.self]
+        [xiangshaSchemaV1_0.self, xiangshaSchemaV1_1.self, xiangshaSchemaV1_2.self, xiangshaSchemaV1_3.self]
     }
 
     /// 迁移阶段（D138 规范）
