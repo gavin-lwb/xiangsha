@@ -45,10 +45,15 @@ struct AppSettingsView: View {
                         .foregroundStyle(Color.theme.accent)
                 }
             }
+            // ⚠️ sheet 必须挂在稳定的视图上（如 NavigationStack）
+            // 不能挂在条件渲染的 Section，否则视图销毁/重建会让 sheet 立即关闭
             .sheet(isPresented: $showAllergenEditor) {
                 if let profile = profiles.first {
                     AllergenEditorSheet(profile: profile)
                 }
+            }
+            .sheet(isPresented: $showDebugPanel) {
+                DebugPanelView()
             }
         }
     }
@@ -192,9 +197,7 @@ struct AppSettingsView: View {
                 Text("D099：仅 DEBUG 构建可见，release 无痕迹")
                     .font(Font.theme.caption)
             }
-            .sheet(isPresented: $showDebugPanel) {
-                DebugPanelView()
-            }
+            // ⚠️ sheet 不再挂这里（移到外层 NavigationStack）
         } else {
             // 隐藏入口：连续点 5 下版本行解锁（D099）
             EmptyView()
