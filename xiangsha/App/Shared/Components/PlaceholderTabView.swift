@@ -35,8 +35,9 @@ struct PlaceholderTabView: View {
         VStack(spacing: 24) {
             Spacer()
 
-            Text(sceneType.icon)
+            Image(systemName: sceneType.icon)
                 .font(.system(size: 72))
+                .foregroundStyle(Color.theme.accent)
                 .accessibilityHidden(true)
 
             Text(greetingText)

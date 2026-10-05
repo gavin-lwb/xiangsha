@@ -301,8 +301,9 @@ private struct SceneHeaderView: View {
 
     var body: some View {
         VStack(spacing: ThemeSpacing.xs) {
-            Text(icon)
+            Image(systemName: icon)
                 .font(.system(size: 56))
+                .foregroundStyle(Color.theme.accent)
                 .accessibilityHidden(true)
 
             Text(greeting)

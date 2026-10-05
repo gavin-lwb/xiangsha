@@ -99,7 +99,9 @@ private struct PlayContentView: View {
     var body: some View {
         VStack(spacing: ThemeSpacing.lg) {
             VStack(spacing: ThemeSpacing.xs) {
-                Text(scene.icon).font(.system(size: 56))
+                Image(systemName: scene.icon)
+                .font(.system(size: 56))
+                .foregroundStyle(Color.theme.accent)
                 Text(viewModel.greetingText)
                     .font(Font.theme.title3)
                     .foregroundStyle(Color.theme.textPrimary)
