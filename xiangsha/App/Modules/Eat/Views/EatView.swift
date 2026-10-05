@@ -187,6 +187,15 @@ private struct EatContentView: View {
     let onFavoriteToggle: () -> Void
     let onLinkRequest: (Card) -> Void
 
+    // Pattern 2：点击卡片放大详情
+    @State private var detailCard: IdentifiableUUID?
+    // D044：进入做菜模式（全屏 RecipeTaskRunner）
+    @State private var cookingCard: Card?
+    // Pattern 6：今日组合底部抽屉
+    @State private var showComboSheet: Bool = false
+
+    @Environment(\.modelContext) private var detailContext
+
     var body: some View {
         ScrollView {
             VStack(spacing: ThemeSpacing.lg) {
@@ -206,12 +215,21 @@ private struct EatContentView: View {
                     PoolPickerView(pools: pools, selectedPoolId: $viewModel.selectedPool)
                 }
 
+                // D046 已解锁进度条
+                CookedProgressView(
+                    cookedCount: viewModel.cookedCount,
+                    totalCount: viewModel.totalCardsCount
+                )
+
                 // 主展示区
                 if let result = viewModel.lastResult {
                     DrawResultView(
                         result: result,
                         isFavorite: viewModel.isCurrentFavorite,
-                        onToggleFavorite: { viewModel.toggleFavorite() }
+                        onToggleFavorite: { viewModel.toggleFavorite() },
+                        onTap: { cardID in
+                            detailCard = IdentifiableUUID(id: cardID)
+                        }
                     )
 
                     // D135 3 emoji 评分
@@ -219,6 +237,56 @@ private struct EatContentView: View {
                         currentRating: viewModel.currentRating,
                         onRate: { emoji in viewModel.rate(emoji: emoji) }
                     )
+
+                    // D044/D045 · 在家做菜动作区（仅 hasRecipe 时显示「看菜谱」）
+                    if result.card.hasRecipe {
+                        Button {
+                            cookingCard = lookupCard(id: result.card.id)
+                        } label: {
+                            HStack {
+                                Image(systemName: "book.closed.fill")
+                                Text("🍳 看菜谱 / 开始做")
+                            }
+                            .font(Font.theme.bodyEmphasis)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, ThemeSpacing.sm)
+                            .background(Color.theme.accentSubtle, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+                            .foregroundStyle(Color.theme.accent)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal)
+                    }
+
+                    // D045 · 「✅ 我做过」按钮
+                    if !viewModel.cookedCardIDs.contains(result.card.id) {
+                        Button {
+                            if let card = lookupCard(id: result.card.id) {
+                                viewModel.markCooked(card: card)
+                            }
+                        } label: {
+                            HStack {
+                                Image(systemName: "checkmark.circle")
+                                Text("✅ 我做过")
+                            }
+                            .font(Font.theme.bodyEmphasis)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, ThemeSpacing.sm)
+                            .background(Color.theme.success.opacity(0.1), in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+                            .foregroundStyle(Color.theme.success)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal)
+                    } else {
+                        HStack(spacing: ThemeSpacing.xs) {
+                            Image(systemName: "checkmark.seal.fill")
+                                .foregroundStyle(Color.theme.success)
+                            Text("已做过")
+                                .font(Font.theme.caption)
+                                .foregroundStyle(Color.theme.textSecondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, ThemeSpacing.sm)
+                    }
 
                     // 评分反馈气泡
                     if let feedback = viewModel.ratingFeedback {
@@ -328,7 +396,57 @@ private struct EatContentView: View {
             .padding(.horizontal, ThemeSpacing.md)
             .padding(.bottom, ThemeSpacing.lg)
         }
+        // Pattern 2：点击抽签结果放大详情
+        .sheet(item: $detailCard) { wrapper in
+            let cardID = wrapper.id
+            let descriptor = FetchDescriptor<Card>(
+                predicate: #Predicate { $0.id == cardID }
+            )
+            if let card = try? detailContext.fetch(descriptor).first {
+                CardDetailSheet(
+                    card: card,
+                    sceneType: scene.type,
+                    onStartCooking: { card in
+                        detailCard = nil  // 关闭详情 sheet
+                        cookingCard = card
+                    }
+                )
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+            }
+        }
+        // D044：全屏 RecipeTaskRunner 做菜模式
+        .fullScreenCover(item: $cookingCard) { card in
+            RecipeTaskRunner(
+                card: card,
+                onComplete: { completedCard in
+                    viewModel.markCooked(card: completedCard)
+                    cookingCard = nil
+                },
+                onDismiss: { cookingCard = nil }
+            )
+        }
+        // Pattern 6：今日组合底部抽屉
+        .sheet(isPresented: $showComboSheet) {
+            TodayComboSheet()
+                .presentationDetents([.height(360), .medium])
+                .presentationDragIndicator(.visible)
+        }
+        .onAppear {
+            viewModel.refreshCookedProgress()
+        }
     }
+
+    /// D044 · 从 modelContext 查询完整 Card（RecipeTaskRunner 需要 Card 实例，非 DrawnCardRef）
+    private func lookupCard(id: UUID) -> Card? {
+        let descriptor = FetchDescriptor<Card>(predicate: #Predicate { $0.id == id })
+        return try? detailContext.fetch(descriptor).first
+    }
+}
+
+/// 辅助：UUID 用于 sheet(item:) 的 Identifiable 包装
+private struct IdentifiableUUID: Identifiable, Equatable {
+    let id: UUID
 }
 
 // MARK: - 子组件
@@ -390,15 +508,22 @@ private struct DrawResultView: View {
     let result: DrawResult
     let isFavorite: Bool
     let onToggleFavorite: () -> Void
+    let onTap: (UUID) -> Void
 
     var body: some View {
         VStack(spacing: ThemeSpacing.md) {
             // 大占位（D140 v1 占位：色块 + 大 emoji + 菜名）
             ZStack(alignment: .topTrailing) {
-                RoundedRectangle(cornerRadius: ThemeRadius.lg)
-                    .fill(Color.theme.accentSubtle)
-                    .frame(height: 240)
-                    .shadow(color: .black.opacity(0.05), radius: ThemeShadow.md, x: 0, y: 2)
+                // Pattern 2：整张卡片可点击放大
+                Button {
+                    onTap(result.card.id)
+                } label: {
+                    RoundedRectangle(cornerRadius: ThemeRadius.lg)
+                        .fill(Color.theme.accentSubtle)
+                        .frame(height: 240)
+                        .shadow(color: .black.opacity(0.05), radius: ThemeShadow.md, x: 0, y: 2)
+                }
+                .buttonStyle(.plain)
 
                 // 收藏按钮（⭐）
                 Button(action: onToggleFavorite) {

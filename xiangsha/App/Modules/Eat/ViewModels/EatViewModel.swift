@@ -392,4 +392,34 @@ final class EatViewModel {
     var showsSecondaryActions: Bool {
         lastResult != nil
     }
+
+    // MARK: - D045/D046 烹饪进度
+
+    /// 已"做过"的卡 ID 集合（D046 进度计算用）
+    var cookedCardIDs: Set<UUID> = []
+
+    /// 当前 Eat Scene 的总卡数（进度分母）
+    var totalCardsCount: Int {
+        guard let scene else { return 0 }
+        return scene.cardPools.flatMap { $0.cards }.filter { !$0.isHidden }.count
+    }
+
+    /// 已解锁进度（cookedCardIDs.count / totalCardsCount）
+    var cookedCount: Int { cookedCardIDs.count }
+
+    /// 刷新烹饪进度（call after markCooked / after view appear）
+    func refreshCookedProgress() {
+        guard let modelContext else { return }
+        let records = (try? modelContext.fetch(FetchDescriptor<UserCookedRecord>())) ?? []
+        cookedCardIDs = Set(records.map { $0.cardID })
+    }
+
+    /// 标记一道菜"我做完了"（D045/D046 · 写 UserCookedRecord）
+    func markCooked(card: Card, noteText: String? = nil, rating: Int? = nil) {
+        guard let modelContext else { return }
+        let record = UserCookedRecord(card: card, noteText: noteText, rating: rating)
+        modelContext.insert(record)
+        try? modelContext.save()
+        refreshCookedProgress()
+    }
 }

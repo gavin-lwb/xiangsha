@@ -261,6 +261,8 @@ struct DrawnCardRef: Sendable, Hashable, Identifiable {
     let mainIngredient: String?
     let isFavorite: Bool
     let createdAt: Date
+    /// 是否有菜谱（D041/D044 · UI 用此判断「看菜谱」按钮是否显示）
+    let hasRecipe: Bool
 
     init(
         id: UUID = UUID(),
@@ -272,7 +274,8 @@ struct DrawnCardRef: Sendable, Hashable, Identifiable {
         brand: String? = nil,
         mainIngredient: String? = nil,
         isFavorite: Bool = false,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        hasRecipe: Bool = false
     ) {
         self.id = id
         self.title = title
@@ -284,6 +287,7 @@ struct DrawnCardRef: Sendable, Hashable, Identifiable {
         self.mainIngredient = mainIngredient
         self.isFavorite = isFavorite
         self.createdAt = createdAt
+        self.hasRecipe = hasRecipe
     }
 
     /// 从 Card 实体构造
@@ -301,6 +305,7 @@ struct DrawnCardRef: Sendable, Hashable, Identifiable {
         self.mainIngredient = card.metadata?["mainIngredient"]
         self.isFavorite = isFavorite
         self.createdAt = card.createdAt
+        self.hasRecipe = card.recipe != nil
     }
 }
 
