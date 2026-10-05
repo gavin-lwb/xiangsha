@@ -64,7 +64,23 @@ final class EatViewModel {
     }
 
     func draw() async {
-        guard let pool = selectedPool ?? scene?.cardPools.first else {
+        // 兜底：如果 scene.cardPools 没自动加载（SwiftData 关系惰性），直接从 context 拉
+        var effectivePool = selectedPool
+        if effectivePool == nil, let scene {
+            if !scene.cardPools.isEmpty {
+                effectivePool = scene.cardPools.first
+            } else if let context = modelContext {
+                // 用 predicate 直接 query，避开关系惰性问题
+                let sceneID = scene.id
+                let descriptor = FetchDescriptor<CardPool>(
+                    predicate: #Predicate { $0.scene?.id == sceneID }
+                )
+                if let first = try? context.fetch(descriptor).first {
+                    effectivePool = first
+                }
+            }
+        }
+        guard let pool = effectivePool else {
             error = .invalidContext(reason: "无可用卡池")
             recordNoCandidates()
             checkNoDecisionTrigger()
@@ -147,6 +163,35 @@ final class EatViewModel {
     func dismissError() {
         error = nil
         showingAllergenWarning = false
+    }
+
+    /// 主动加载初始数据（替代 @Query 的异步时序问题）
+    ///
+    /// SwiftData @Query 首次 fetch 是异步的，且 xiangshawApp.init() 的 seed 任务可能比 .task 慢，
+    /// 这里最多重试 20 次（每次 100ms），确保拿到数据。
+    func loadInitialData(context: ModelContext) async {
+        var scenes: [DecisionScene] = []
+        for _ in 0..<20 {
+            let sceneDescriptor = FetchDescriptor<DecisionScene>(
+                predicate: #Predicate { $0.typeRaw == "eat" }
+            )
+            scenes = (try? context.fetch(sceneDescriptor)) ?? []
+            if !scenes.isEmpty { break }
+            try? await Task.sleep(nanoseconds: 100_000_000)
+        }
+        self.scene = scenes.first
+
+        // 兜底：全量 fetch CardPool，按 scene.id 过滤（避开可选链 predicate 限制）
+        if selectedPool == nil, let scene = self.scene {
+            let sceneID = scene.id
+            var allPools: [CardPool] = []
+            for _ in 0..<20 {
+                allPools = (try? context.fetch(FetchDescriptor<CardPool>())) ?? []
+                if !allPools.isEmpty { break }
+                try? await Task.sleep(nanoseconds: 100_000_000)
+            }
+            self.selectedPool = allPools.first { $0.scene?.id == sceneID }
+        }
     }
 
     /// D134 不决策模式触发判断（连续 L1 兜底 ≥ 3 次）

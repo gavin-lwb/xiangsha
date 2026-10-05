@@ -132,10 +132,18 @@ struct EatView: View {
                 weatherLoaded = true
             }
         }
-        .onAppear {
-            viewModel.scene = eatScenes.first
-            viewModel.selectedPool = eatScenes.first?.cardPools.first
+        .task {
+            // D137 天气感知（v1 stub：首次进入 Tab 拉一次）
+            if !weatherLoaded {
+                await weatherService.fetchCurrentWeather()
+                weatherLoaded = true
+            }
+
+            // ⚠️ SwiftData @Query 首次 fetch 是异步，task 触发时数据可能还没回来
+            // 直接用 modelContext.fetch 主动拉（同步 + 可靠）
             viewModel.modelContext = modelContext
+            await viewModel.loadInitialData(context: modelContext)
+
             if let profile = profiles.first {
                 viewModel.userProfileSnapshot = UserProfileSnapshot(
                     from: profile,

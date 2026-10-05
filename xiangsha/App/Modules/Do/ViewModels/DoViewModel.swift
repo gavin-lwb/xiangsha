@@ -33,6 +33,31 @@ final class DoViewModel {
 
     init() {}
 
+    /// 主动加载初始数据（替代 @Query 的异步时序问题）
+    func loadInitialData(context: ModelContext) async {
+        var scenes: [DecisionScene] = []
+        for _ in 0..<20 {
+            let sceneDescriptor = FetchDescriptor<DecisionScene>(
+                predicate: #Predicate { $0.typeRaw == "task" }
+            )
+            scenes = (try? context.fetch(sceneDescriptor)) ?? []
+            if !scenes.isEmpty { break }
+            try? await Task.sleep(nanoseconds: 100_000_000)
+        }
+        self.scene = scenes.first
+
+        if selectedPool == nil, let scene = self.scene {
+            let sceneID = scene.id
+            var allPools: [CardPool] = []
+            for _ in 0..<20 {
+                allPools = (try? context.fetch(FetchDescriptor<CardPool>())) ?? []
+                if !allPools.isEmpty { break }
+                try? await Task.sleep(nanoseconds: 100_000_000)
+            }
+            self.selectedPool = allPools.first { $0.scene?.id == sceneID }
+        }
+    }
+
     func selectPool(_ pool: CardPool) { selectedPool = pool }
 
     func draw() async {

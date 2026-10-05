@@ -53,10 +53,10 @@ struct DoView: View {
                     .padding(.top, ThemeSpacing.md)
             }
         }
-        .onAppear {
-            viewModel.scene = doScenes.first
-            viewModel.selectedPool = doScenes.first?.cardPools.first
+        .task {
+            // ⚠️ SwiftData @Query 异步：直接用 modelContext.fetch 同步拉
             viewModel.modelContext = modelContext
+            await viewModel.loadInitialData(context: modelContext)
             if let profile = profiles.first {
                 viewModel.userProfileSnapshot = UserProfileSnapshot(
                     from: profile,
