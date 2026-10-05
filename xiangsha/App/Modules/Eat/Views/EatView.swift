@@ -216,6 +216,9 @@ private struct EatContentView: View {
     @State private var difficultyFilter: SecondaryFilter = .any
     // D092：首抽引导气泡
     @State private var showFirstDrawHint: Bool = false
+    // 抽取动画全屏页（UX 改进）
+    @State private var showDrawAnimation: Bool = false
+    @State private var drawAnimationCard: Card?
     // D047/D056：v1.1 roadmap sheet
     @State private var showRoadmapSheet: Bool = false
 
@@ -449,10 +452,10 @@ private struct EatContentView: View {
                 title: viewModel.primaryButtonText,
                 isLoading: viewModel.isLoading,
                 action: {
-                    if viewModel.lastResult != nil {
-                        viewModel.accept()
-                        onAcceptComplete()
-                    } else {
+                    // 打开抽取动画全屏页
+                    showDrawAnimation = true
+                    // 如果还没抽过，先抽
+                    if viewModel.lastResult == nil {
                         Task { await viewModel.draw() }
                     }
                 }
@@ -460,6 +463,33 @@ private struct EatContentView: View {
             .padding(.horizontal)
             .padding(.bottom, ThemeSpacing.sm)
             .background(.thinMaterial)
+        }
+        // UX 改进：抽取动画全屏页
+        .fullScreenCover(isPresented: $showDrawAnimation) {
+            DrawAnimationView(
+                card: drawAnimationCard,
+                isLoading: viewModel.isLoading && viewModel.lastResult == nil,
+                onAccept: {
+                    viewModel.accept()
+                    onAcceptComplete()
+                },
+                onReject: {
+                    Task { await viewModel.redraw() }
+                },
+                onRedraw: {
+                    Task { await viewModel.redraw() }
+                },
+                onDismiss: {
+                    showDrawAnimation = false
+                    drawAnimationCard = nil
+                }
+            )
+        }
+        // 监听 lastResult 变化，同步给 drawAnimationCard
+        .onChange(of: viewModel.lastResult?.card.id) { _, newID in
+            if let newID, drawAnimationCard == nil {
+                drawAnimationCard = lookupCard(id: newID)
+            }
         }
         // Pattern 2：点击抽签结果放大详情
         .sheet(item: $detailCard) { wrapper in
