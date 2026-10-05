@@ -9,26 +9,36 @@
 import SwiftUI
 import SwiftData
 
-/// 抽取动画全屏页（吃啥 / 玩啥 / 做啥 / 拍啥 Tab 共用）
+/// 抽取动画全屏页（吃啥 Tab 用）
 ///
 /// 3 阶段：
 /// 1. **loading**（0.8s）：🦊 旋转 + "让小狐狸想想…🦊"
 /// 2. **reveal**（scale 0.6→1.0 + opacity 0→1）：emoji + 标题揭幕
-/// 3. **result**：完整卡片 + 主/次按钮
+/// 3. **result**：完整卡片 + 评分 + 我做过 + 分享 + 主/次按钮
 ///
-/// onDone：动画完成后回调（accept / reject / 重新抽）
+/// 承接所有 action：
+/// - 评分（D135）：emoji 3 选 1
+/// - 我做过（D045）：写 UserCookedRecord
+/// - 分享（D037）：打开 ShareCardSheet
+/// - 接受：accept + dismiss
+/// - 拒绝：reject + dismiss
 struct DrawAnimationView: View {
     let card: Card?       // 抽取结果（nil = 还在抽）
     let isLoading: Bool    // 是否还在 loading
+    let isCooked: Bool     // 是否已做过
     let onAccept: () -> Void
     let onReject: () -> Void
-    let onRedraw: () -> Void
+    let onRate: (EmojiRating) -> Void
+    let onMarkCooked: () -> Void
+    let onShare: () -> Void
+    let onCookRecipe: () -> Void
     let onDismiss: () -> Void
 
     @State private var stage: Stage = .loading
     @State private var emojiScale: CGFloat = 0.6
     @State private var emojiOpacity: Double = 0
     @State private var titleOpacity: Double = 0
+    @State private var selectedRating: EmojiRating?
 
     enum Stage { case loading, reveal, result }
 
@@ -137,6 +147,83 @@ struct DrawAnimationView: View {
                 .tint(Color.theme.accent)
         case .result:
             VStack(spacing: ThemeSpacing.sm) {
+                // D135 · emoji 评分
+                HStack(spacing: ThemeSpacing.md) {
+                    ForEach([EmojiRating.like, .neutral, .dislike], id: \.self) { rating in
+                        Button {
+                            selectedRating = rating
+                            onRate(rating)
+                        } label: {
+                            Text(rating.rawValue)
+                                .font(.system(size: 36))
+                                .scaleEffect(selectedRating == rating ? 1.25 : 1.0)
+                                .opacity(selectedRating == nil || selectedRating == rating ? 1.0 : 0.4)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, ThemeSpacing.sm)
+                                .background(
+                                    selectedRating == rating ? Color.theme.accentSubtle : Color.theme.surface,
+                                    in: RoundedRectangle(cornerRadius: ThemeRadius.md)
+                                )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, ThemeSpacing.sm)
+
+                // D044 · 看菜谱按钮（仅 hasRecipe 时）
+                if let card, card.recipe != nil {
+                    Button(action: {
+                        onCookRecipe()
+                    }) {
+                        HStack {
+                            Image(systemName: "book.closed.fill")
+                            Text("🍳 看菜谱 / 开始做")
+                        }
+                        .font(Font.theme.bodyEmphasis)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, ThemeSpacing.sm)
+                        .background(Color.theme.accentSubtle, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+                        .foregroundStyle(Color.theme.accent)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal)
+                }
+
+                // D045 · 我做过 / D037 · 分享
+                HStack(spacing: ThemeSpacing.md) {
+                    Button(action: {
+                        onMarkCooked()
+                    }) {
+                        HStack {
+                            Image(systemName: isCooked ? "checkmark.seal.fill" : "checkmark.circle")
+                            Text(isCooked ? "已做过" : "✅ 我做过")
+                        }
+                        .font(Font.theme.bodyEmphasis)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, ThemeSpacing.sm)
+                        .background(Color.theme.success.opacity(0.1), in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+                        .foregroundStyle(isCooked ? Color.theme.textSecondary : Color.theme.success)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isCooked)
+
+                    Button(action: {
+                        onShare()
+                    }) {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("📤 分享")
+                        }
+                        .font(Font.theme.bodyEmphasis)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, ThemeSpacing.sm)
+                        .background(Color.theme.accentSubtle, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+                        .foregroundStyle(Color.theme.accent)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal)
+
                 // 主接受
                 Button(action: {
                     onAccept()
@@ -152,21 +239,25 @@ struct DrawAnimationView: View {
                     .background(Color.theme.accent, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
                     .foregroundStyle(Color.theme.textOnPrimary)
                 }
+                .padding(.horizontal)
 
                 // 次按钮
-                HStack(spacing: ThemeSpacing.md) {
-                    Button(action: {
-                        onReject()
-                        onDismiss()
-                    }) {
+                Button(action: {
+                    onReject()
+                    onDismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "arrow.counterclockwise")
                         Text("换一个 🔁")
-                            .font(Font.theme.bodyEmphasis)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, ThemeSpacing.sm)
-                            .background(Color.theme.surface, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
-                            .foregroundStyle(Color.theme.textPrimary)
                     }
+                    .font(Font.theme.bodyEmphasis)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, ThemeSpacing.sm)
+                    .background(Color.theme.surface, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+                    .foregroundStyle(Color.theme.textPrimary)
                 }
+                .buttonStyle(.plain)
+                .padding(.horizontal)
             }
         }
     }

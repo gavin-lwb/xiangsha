@@ -314,6 +314,7 @@ private struct EatContentView: View {
             DrawAnimationView(
                 card: drawAnimationCard,
                 isLoading: viewModel.isLoading && viewModel.lastResult == nil,
+                isCooked: drawAnimationCard.map { viewModel.cookedCardIDs.contains($0.id) } ?? false,
                 onAccept: {
                     viewModel.accept()
                     onAcceptComplete()
@@ -321,8 +322,21 @@ private struct EatContentView: View {
                 onReject: {
                     Task { await viewModel.redraw() }
                 },
-                onRedraw: {
-                    Task { await viewModel.redraw() }
+                onRate: { emoji in viewModel.rate(emoji: emoji) },
+                onMarkCooked: {
+                    if let card = drawAnimationCard {
+                        viewModel.markCooked(card: card)
+                    }
+                },
+                onShare: {
+                    if let card = drawAnimationCard {
+                        shareCard = card
+                    }
+                },
+                onCookRecipe: {
+                    if let card = drawAnimationCard {
+                        cookingCard = card
+                    }
                 },
                 onDismiss: {
                     showDrawAnimation = false
