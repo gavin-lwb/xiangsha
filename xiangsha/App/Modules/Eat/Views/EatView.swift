@@ -457,6 +457,8 @@ private struct EatContentView: View {
             .padding(.horizontal, ThemeSpacing.md)
             .padding(.bottom, ThemeSpacing.lg)
         }
+        // 防止 TabBar 浮动遮挡 ScrollView 底部内容
+        .safeAreaPadding(.bottom, 60)
         // Pattern 2：点击抽签结果放大详情
         .sheet(item: $detailCard) { wrapper in
             let cardID = wrapper.id
@@ -1079,42 +1081,74 @@ private struct NoDecisionPanel: View {
     var body: some View {
         VStack(spacing: ThemeSpacing.md) {
             Text("🦊")
-                .font(.system(size: 80))
+                .font(.system(size: 48))
 
-            Text("今天看起来都不太对胃口呢……")
-                .font(Font.theme.title3)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(Color.theme.textPrimary)
+            VStack(spacing: ThemeSpacing.xxs) {
+                Text("今天都不太对胃口")
+                    .font(Font.theme.title3)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(Color.theme.textPrimary)
+                Text("换个玩法？")
+                    .font(Font.theme.body)
+                    .foregroundStyle(Color.theme.textSecondary)
+            }
 
-            Text("要不要换个玩法？")
-                .font(Font.theme.body)
-                .foregroundStyle(Color.theme.textSecondary)
-
-            VStack(spacing: ThemeSpacing.sm) {
-                NoDecisionButton(
+            // D134 紧凑布局：3 按钮一行式，emoji+短标题
+            HStack(spacing: ThemeSpacing.xs) {
+                NoDecisionCompactButton(
                     emoji: "🛌",
-                    title: "算了，今天就不抽了",
+                    label: "不抽了",
                     action: { onAction(.skip) }
                 )
-                NoDecisionButton(
+                NoDecisionCompactButton(
                     emoji: "🔄",
-                    title: "换到「\(eatOtherScene)」看看",
+                    label: "换「\(eatOtherScene)」",
                     action: { onAction(.changeCategory) }
                 )
-                NoDecisionButton(
+                NoDecisionCompactButton(
                     emoji: "💡",
-                    title: "我心里有答案",
+                    label: "心里有数",
                     action: { onAction(.decideMyself) }
                 )
             }
-            .padding(.top, ThemeSpacing.sm)
+            .padding(.top, ThemeSpacing.xs)
         }
-        .padding(.horizontal, ThemeSpacing.xl)
+        .padding(.horizontal, ThemeSpacing.md)
+        .padding(.vertical, ThemeSpacing.sm)
     }
 
     private var eatOtherScene: String {
         // 推荐切换到「玩啥」
         "玩啥"
+    }
+}
+
+/// D134 紧凑按钮（emoji + 短标签，垂直布局，按 1 屏可见优化）
+private struct NoDecisionCompactButton: View {
+    let emoji: String
+    let label: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Text(emoji)
+                    .font(.title2)
+                Text(label)
+                    .font(Font.theme.caption)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, ThemeSpacing.sm)
+            .background(Color.theme.surface, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+            .overlay(
+                RoundedRectangle(cornerRadius: ThemeRadius.md)
+                    .stroke(Color.theme.border, lineWidth: 1)
+            )
+            .foregroundStyle(Color.theme.textPrimary)
+        }
+        .buttonStyle(.plain)
     }
 }
 
