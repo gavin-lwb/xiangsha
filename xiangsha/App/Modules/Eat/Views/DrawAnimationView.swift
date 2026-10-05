@@ -95,28 +95,30 @@ struct DrawAnimationView: View {
                     .padding(.bottom, ThemeSpacing.xl)
             }
         }
-        // 关键修复：每次 card 变化（包括 nil → 首个结果）都强制重启动画
-        // 用 .task(id:) 替代 onAppear + onChange，避免 SwiftUI 复用 view 时 onAppear 不触发的问题
+        // 重写：直接 .task 顺序推进 stage（不依赖 withAnimation / DispatchQueue）
+        // 之前实现用 DispatchQueue.main.asyncAfter + withAnimation，多次抽取时 task 取消
+        // 导致 stage 卡在 .loading。现在用 .task 串行 await，每次都强制推进。
         .task(id: card?.id ?? UUID()) {
-            // 重置所有 stage 状态
+            // 重置
             emojiScale = 0.6
             emojiOpacity = 0
             titleOpacity = 0
             stage = .loading
 
-            // 启动 loading 动画（旋转 + 呼吸）
-            withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
-                loadingScale = 1.15
-            }
-            withAnimation(.linear(duration: 0.8).repeatForever(autoreverses: false)) {
-                spinAngle = 360
-            }
-
-            // 强制 loading 持续至少 800ms（即使 card 已经在）
+            // loading 阶段持续 800ms（不管 card 状态）
             try? await Task.sleep(nanoseconds: 800_000_000)
 
-            // 进入 reveal 阶段
-            advanceToReveal()
+            // → reveal：emoji 揭幕
+            stage = .reveal
+            emojiScale = 1.0
+            emojiOpacity = 1.0
+
+            // reveal 阶段持续 800ms
+            try? await Task.sleep(nanoseconds: 800_000_000)
+
+            // → result：标题 + 元数据淡入
+            stage = .result
+            titleOpacity = 1.0
         }
     }
 
@@ -126,17 +128,28 @@ struct DrawAnimationView: View {
     private var emojiArea: some View {
         ZStack {
             if stage == .loading {
-                // Loading 动画：🦊 旋转 + 呼吸
+                // Loading 动画：🦊 旋转 + 呼吸（repeatForever 通过 .animation + 自身值递增）
                 Text("🦊")
                     .font(.system(size: 120))
                     .rotationEffect(.degrees(spinAngle))
                     .scaleEffect(loadingScale)
+                    .onAppear {
+                        // 启动持续旋转
+                        withAnimation(.linear(duration: 1.2).repeatForever(autoreverses: false)) {
+                            spinAngle = 360
+                        }
+                        withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) {
+                            loadingScale = 1.15
+                        }
+                    }
             } else if let card {
-                // 结果 emoji：揭幕 scale + opacity
+                // 结果 emoji：揭幕 scale + opacity（用 .animation(value:) 自动动画）
                 Text(card.emoji ?? "🎴")
                     .font(.system(size: 180))
                     .scaleEffect(emojiScale)
                     .opacity(emojiOpacity)
+                    .animation(.spring(response: 0.6, dampingFraction: 0.65), value: emojiScale)
+                    .animation(.easeIn(duration: 0.3), value: emojiOpacity)
             }
         }
         .frame(height: 200)
@@ -307,20 +320,11 @@ struct DrawAnimationView: View {
 
     // MARK: - 动画推进
 
+    // advanceToReveal 不再用（stage 推进在 .task 里直接赋值）
     private func advanceToReveal() {
-        // loading → reveal：emoji 揭幕
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.65)) {
-            stage = .reveal
-            emojiScale = 1.0
-            emojiOpacity = 1.0
-        }
-
-        // 0.8s 后进 result：标题 + 元数据淡入
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            withAnimation(.easeIn(duration: 0.3)) {
-                stage = .result
-                titleOpacity = 1.0
-            }
-        }
+        // 保留作 fallback（如果有代码还在调用）
+        stage = .reveal
+        emojiScale = 1.0
+        emojiOpacity = 1.0
     }
 }
