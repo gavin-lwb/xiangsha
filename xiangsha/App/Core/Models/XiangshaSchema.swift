@@ -17,9 +17,10 @@ import SwiftData
 /// 3. App 启动时 SwiftData 自动检测 versioned 升级并迁移
 enum SchemaVersion: Int, CaseIterable {
     case v1_0 = 1
-    case v1_1 = 2   // Card 加 7 字段（scenario / availableTimes / seasonWeights / cuisine / priceRange / recipe / serves）+ 新增 UserCookedRecord
-    // v1.2+ 占位
-    // case v1_2 = 3  // 加 DecisionJournalEntry + CardSnapshot + Routine
+    case v1_1 = 2   // Card 加 7 字段 + 新增 UserCookedRecord
+    case v1_2 = 3   // UserProfile 加 preferredCuisines（D027 软调权）
+    // v1.3+ 占位
+    // case v1_3 = 4  // 加 DecisionJournalEntry + CardSnapshot + Routine
 }
 
 /// v1.0 Schema 定义
@@ -64,22 +65,45 @@ enum xiangshaSchemaV1_1: VersionedSchema {
     }
 }
 
+/// v1.2 Schema 定义（D138 · D027 菜系软调权）
+///
+/// 新增：
+/// - UserProfile.preferredCuisines: [Cuisine]（D027 偏好菜系，软调权）
+///
+/// 迁移方式：lightweight migration。
+enum xiangshaSchemaV1_2: VersionedSchema {
+    static var versionIdentifier: Schema.Version { Schema.Version(1, 2, 0) }
+
+    static var models: [any PersistentModel.Type] {
+        [
+            DecisionScene.self,
+            CardPool.self,
+            Card.self,
+            DrawRecord.self,
+            UserProfile.self,
+            Favorite.self,
+            UserTaskRecord.self,
+            UserCookedRecord.self
+        ]
+    }
+}
+
 /// Schema 迁移计划（D138）
 ///
-/// 当前：v1_0 → v1_1（lightweight migration）
-/// v1.2+：增加 stages 描述迁移逻辑
+/// 当前：v1_0 → v1_1 → v1_2（均为 lightweight migration）
+/// v1.3+：增加 stages 描述迁移逻辑
 ///
 /// 迁移策略（SPEC §10.5）：
 /// - v1.x 小版本：lightweight migration（新增 optional / 带默认值字段 + 新 model）
 /// - v1 → v2 大版本：写 VersionedSchema + SchemaMigrationPlan + 显式闭包
 enum xiangshaMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [xiangshaSchemaV1_0.self, xiangshaSchemaV1_1.self]
+        [xiangshaSchemaV1_0.self, xiangshaSchemaV1_1.self, xiangshaSchemaV1_2.self]
     }
 
     /// 迁移阶段（D138 规范）
     ///
-    /// v1_0 → v1_1 由 SwiftData 自动 lightweight migration（无显式闭包）。
+    /// v1_0 → v1_1 / v1_1 → v1_2 均为 SwiftData 自动 lightweight migration（无显式闭包）。
     /// 后续 v1.x → v1.y 大改动时在此加 .migration(fromVersion:toVersion:) { context in ... } 闭包。
     static var stages: [MigrationStage] {
         []

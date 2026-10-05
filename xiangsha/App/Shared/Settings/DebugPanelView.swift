@@ -170,6 +170,7 @@ struct DebugPanelView: View {
             profile.lastDrawDate = nil
             profile.lastResetDate = Date()
             profile.preferredStyles = []
+            profile.preferredCuisines = []
             profile.preferredCategories = []
             profile.preferredBrands = []
             profile.updatedAt = Date()

@@ -330,6 +330,17 @@ final class EatViewModel {
             emojiRating: emojiRating
         )
         modelContext.insert(record)
+
+        // D050 餐次平衡：accept 时把 card.category 写入 profile.lastMealOfToday
+        // 后续抽签 DrawEngine.mealTimeFactor 会据此软调权（主食/菜/汤 = 1:1:0.5）
+        if action == .accept {
+            let profileDescriptor = FetchDescriptor<UserProfile>()
+            if let profile = (try? modelContext.fetch(profileDescriptor))?.first {
+                profile.lastMealOfToday = card.category
+                profile.updatedAt = Date()
+            }
+        }
+
         try? modelContext.save()
     }
 

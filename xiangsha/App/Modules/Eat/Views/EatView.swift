@@ -292,6 +292,34 @@ private struct EatContentView: View {
                         )
                     }
                     .padding(.horizontal)
+
+                    // D052 破例按钮（L2 过敏警告时显示：含过敏原也要）
+                    if viewModel.showingAllergenWarning {
+                        Button {
+                            viewModel.accept()
+                            onAcceptComplete()
+                        } label: {
+                            HStack(spacing: ThemeSpacing.xs) {
+                                Image(systemName: "exclamationmark.shield.fill")
+                                Text("💪 我就要这个（破例）")
+                            }
+                            .font(Font.theme.bodyEmphasis)
+                            .foregroundStyle(Color.theme.warning)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, ThemeSpacing.sm)
+                            .background(
+                                Color.theme.warning.opacity(0.1),
+                                in: RoundedRectangle(cornerRadius: ThemeRadius.md)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: ThemeRadius.md)
+                                    .stroke(Color.theme.warning.opacity(0.4), lineWidth: 1)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal)
+                        .padding(.top, ThemeSpacing.xs)
+                    }
                 }
 
                 // 底部留白

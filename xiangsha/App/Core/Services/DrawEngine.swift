@@ -138,6 +138,7 @@ struct UserProfileSnapshot: Sendable, Hashable {
     let allergens: [String]
     let recentStyles7d: [String]
     let userPreferredStyles: [String]
+    let preferredCuisines: [Cuisine]
     let drawsToday: Int
     let lastMealOfToday: String?
     let preferredCategories: [String]
@@ -156,6 +157,7 @@ struct UserProfileSnapshot: Sendable, Hashable {
         allergens: [String] = [],
         recentStyles7d: [String] = [],
         userPreferredStyles: [String] = [],
+        preferredCuisines: [Cuisine] = [],
         drawsToday: Int = 0,
         lastMealOfToday: String? = nil,
         preferredCategories: [String] = [],
@@ -168,6 +170,7 @@ struct UserProfileSnapshot: Sendable, Hashable {
         self.allergens = allergens
         self.recentStyles7d = recentStyles7d
         self.userPreferredStyles = userPreferredStyles
+        self.preferredCuisines = preferredCuisines
         self.drawsToday = drawsToday
         self.lastMealOfToday = lastMealOfToday
         self.preferredCategories = preferredCategories
@@ -192,6 +195,7 @@ struct UserProfileSnapshot: Sendable, Hashable {
         self.allergens = profile.allergens
         self.recentStyles7d = recentStyles7d
         self.userPreferredStyles = profile.preferredStyles
+        self.preferredCuisines = profile.preferredCuisines
         self.drawsToday = profile.drawsToday
         self.lastMealOfToday = lastMealOfToday
         self.preferredCategories = profile.preferredCategories
@@ -540,15 +544,29 @@ struct RuleBasedEngine: DrawEngine {
                 ))
             }
 
-            // T07 风格轮换（SPEC §A.5）
+            // T07 风格轮换（SPEC §A.5 · D051）
             if config.styleRotationEnabled,
                let style = card.metadata?["style"],
-               let styleF = styleFactor(style: style, recentStyles: user.recentStyles7d),
+               let styleF = styleFactor(style: style, recentStyles: user.recentStyles7d, userPreferredStyles: user.userPreferredStyles),
                styleF != 1.0 {
                 let before = weight
                 weight *= styleF
                 factors.append(FactorApplication(
                     factorName: "styleFactor",
+                    cardID: card.id,
+                    multiplierBefore: before,
+                    multiplierAfter: weight
+                ))
+            }
+
+            // T18 菜系软调权（D027 · cuisine 命中用户偏好 → ×1.3）
+            if let cuisine = card.cuisine,
+               user.preferredCuisines.contains(cuisine) {
+                let cuisineBoost = 1.3
+                let before = weight
+                weight *= cuisineBoost
+                factors.append(FactorApplication(
+                    factorName: "cuisineBoost",
                     cardID: card.id,
                     multiplierBefore: before,
                     multiplierAfter: weight
@@ -647,12 +665,20 @@ struct RuleBasedEngine: DrawEngine {
         }
     }
 
-    // MARK: - 风格轮换（SPEC §A.5）
+    // MARK: - 风格轮换（SPEC §A.5 · D051）
 
-    private func styleFactor(style: String, recentStyles: [String]) -> Double? {
-        // v1 简化版：仅检查 recentStyles，未接入 preferredStyles 完整逻辑（D005 SPEC §A.5）
+    /// 风格软调权（D051）
+    ///
+    /// - 7d 内抽过该 style → ×0.7（避免连续推荐同一风格）
+    /// - 用户偏好列表里有该 style → ×1.5（加强偏好）
+    /// - 两边都没有 → 1.0（中性）
+    /// - 同时命中 → 取较小值（recentStyles 0.7 优先，因为"最近吃过"比"曾经偏好"更强烈）
+    private func styleFactor(style: String, recentStyles: [String], userPreferredStyles: [String]) -> Double? {
         if recentStyles.contains(style) {
             return 0.7
+        }
+        if userPreferredStyles.contains(style) {
+            return 1.5
         }
         return 1.0
     }
