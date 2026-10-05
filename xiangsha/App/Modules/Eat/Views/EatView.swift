@@ -198,6 +198,8 @@ private struct EatContentView: View {
     // D043：二级筛选条件
     @State private var timeFilter: SecondaryFilter = .any
     @State private var difficultyFilter: SecondaryFilter = .any
+    // D092：首抽引导气泡
+    @State private var showFirstDrawHint: Bool = false
 
     @Environment(\.modelContext) private var detailContext
 
@@ -233,6 +235,15 @@ private struct EatContentView: View {
 
                 // 主展示区
                 if let result = viewModel.lastResult {
+                    // D092 · 首抽引导气泡（仅首次显示）
+                    if showFirstDrawHint {
+                        FirstDrawHintBubble(onDismiss: {
+                            showFirstDrawHint = false
+                            FirstDrawHintStore.markSeen()
+                        })
+                        .transition(.scale.combined(with: .opacity))
+                    }
+
                     DrawResultView(
                         result: result,
                         isFavorite: viewModel.isCurrentFavorite,
@@ -469,6 +480,16 @@ private struct EatContentView: View {
         }
         .onAppear {
             viewModel.refreshCookedProgress()
+            // D092 · 首次进入 + 有 result 时显示引导气泡
+            if !FirstDrawHintStore.hasSeen, viewModel.lastResult != nil {
+                showFirstDrawHint = true
+            }
+        }
+        .onChange(of: viewModel.lastResult != nil) { _, hasResult in
+            // 用户首次抽到结果时显示
+            if hasResult, !FirstDrawHintStore.hasSeen, !showFirstDrawHint {
+                showFirstDrawHint = true
+            }
         }
     }
 
