@@ -82,6 +82,10 @@ struct DebugPanelView: View {
 
     private var actionsSection: some View {
         Section {
+            Button(action: resetDrawsToday) {
+                Label("重置今日抽签次数（D132 调试用）", systemImage: "arrow.counterclockwise.circle.fill")
+                    .foregroundStyle(Color.theme.accent)
+            }
             Button(action: clearAllData) {
                 Label("清空所有数据", systemImage: "trash.fill")
                     .foregroundStyle(Color.theme.danger)
@@ -97,7 +101,7 @@ struct DebugPanelView: View {
         } header: {
             Text("数据操作")
         } footer: {
-            Text("清空数据后下次启动会重新播种 180 张卡")
+            Text("清空数据后下次启动会重新播种 291 张卡；DEBUG 模式不会被自动关闭")
                 .font(Font.theme.caption)
         }
     }
@@ -131,12 +135,24 @@ struct DebugPanelView: View {
         for profile in profiles {
             profile.drawsToday = 0
             profile.earnedAchievements = []
-            profile.debugModeEnabled = false
+            // ⚠️ 不关闭 DEBUG 模式（避免 AppSettingsView 重渲染导致 sheet 状态丢失）
             profile.updatedAt = Date()
         }
         try? modelContext.save()
-        // 重新播种
-        SeedService.seedIfNeeded(context: modelContext)
+        // 重新播种（异步，避免阻塞）
+        Task { @MainActor in
+            SeedService.seedIfNeeded(context: modelContext)
+        }
+    }
+
+    /// 重置今日抽签次数（D132 跨午夜）—— 调试快捷按钮
+    private func resetDrawsToday() {
+        for profile in profiles {
+            profile.drawsToday = 0
+            profile.lastDrawDate = nil
+            profile.updatedAt = Date()
+        }
+        try? modelContext.save()
     }
 
     private func resetOnboarding() {
