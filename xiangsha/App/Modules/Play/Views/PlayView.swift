@@ -98,6 +98,7 @@ private struct PlayContentView: View {
 
     @State private var detailCard: PlayIdentifiableUUID?
     @State private var showComboSheet: Bool = false
+    @State private var shareCard: Card?
     @Environment(\.modelContext) private var detailContext
 
     var body: some View {
@@ -136,6 +137,25 @@ private struct PlayContentView: View {
                 if let feedback = viewModel.ratingFeedback {
                     PlayFeedbackBubble(text: feedback, onDismiss: { viewModel.clearRatingFeedback() })
                 }
+
+                // D037 · 分享按钮
+                Button {
+                    if let card = lookupCard(id: result.card.id) {
+                        shareCard = card
+                    }
+                } label: {
+                    HStack {
+                        Image(systemName: "square.and.arrow.up")
+                        Text("📤 分享给朋友")
+                    }
+                    .font(Font.theme.bodyEmphasis)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, ThemeSpacing.sm)
+                    .background(Color.theme.accentSubtle, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+                    .foregroundStyle(Color.theme.accent)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal)
 
                 // D121 跨场景联动 banner
                 if let target = CrossSceneLinkService.recommendedTarget(for: .play),
@@ -205,6 +225,18 @@ private struct PlayContentView: View {
                 .presentationDetents([.height(360), .medium])
                 .presentationDragIndicator(.visible)
         }
+        // D037 · 分享卡 sheet
+        .sheet(item: $shareCard) { card in
+            ShareCardSheet(card: card)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
+    }
+
+    /// 从 modelContext 查询完整 Card（ShareCardSheet / CardDetailSheet 需要 Card 实例）
+    private func lookupCard(id: UUID) -> Card? {
+        let descriptor = FetchDescriptor<Card>(predicate: #Predicate { $0.id == id })
+        return try? detailContext.fetch(descriptor).first
     }
 }
 

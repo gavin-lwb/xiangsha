@@ -51,7 +51,16 @@ final class PlayViewModel {
                 if !allPools.isEmpty { break }
                 try? await Task.sleep(nanoseconds: 100_000_000)
             }
-            self.selectedPool = allPools.first { $0.scene?.id == sceneID }
+            let scenePools = allPools.filter { $0.scene?.id == sceneID }
+            // D059 · 按当前时段自动选 pool（午后偏室外，其余按名字包含匹配）
+            let hour = Calendar.current.component(.hour, from: Date())
+            let preferred: CardPool?
+            if 14 <= hour && hour < 18 {
+                preferred = scenePools.first { $0.name.contains("室外") } ?? scenePools.first
+            } else {
+                preferred = scenePools.first { $0.name.contains("室内") } ?? scenePools.first
+            }
+            self.selectedPool = preferred
         }
     }
 
