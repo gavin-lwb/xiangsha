@@ -19,6 +19,7 @@ struct PlayView: View {
 
     @State private var viewModel = PlayViewModel()
     @State private var pendingAchievements: [Achievement] = []
+    @State private var showUserCardSheet: Bool = false
     @Environment(\.modelContext) private var modelContext
 
     let onLinkRequest: (Card) -> Void
@@ -50,10 +51,27 @@ struct PlayView: View {
             .background(Color.theme.background)
             .navigationTitle(DecisionSceneType.play.title)
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showUserCardSheet = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(Color.theme.accent)
+                    }
+                    .accessibilityLabel("加点子")
+                }
+            }
             .overlay(alignment: .top) {
                 CelebrationToastStack(pendingAchievements: $pendingAchievements)
                     .padding(.top, ThemeSpacing.md)
             }
+        }
+        .sheet(isPresented: $showUserCardSheet) {
+            PlayUserCardSheet { title, emoji, costLevel in
+                viewModel.createUserActivityCard(title: title, emoji: emoji, costLevel: costLevel)
+            }
+            .presentationDetents([.medium])
         }
         .task {
             // ⚠️ SwiftData @Query 异步：直接用 modelContext.fetch 同步拉

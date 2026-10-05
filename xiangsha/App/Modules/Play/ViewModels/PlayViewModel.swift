@@ -192,4 +192,49 @@ final class PlayViewModel {
     }
 
     var showsSecondaryActions: Bool { lastResult != nil }
+
+    // MARK: - 用户自定义玩啥卡（Card.isUserCreated = true）
+
+    /// 用户新增一个点子
+    func createUserActivityCard(title: String, emoji: String, costLevel: CostLevel) {
+        guard let modelContext, let scene = self.scene, let pool = findOrCreateUserActivityPool(scene: scene) else { return }
+        let card = Card(
+            title: title,
+            scene: scene,
+            pool: pool,
+            emoji: emoji,
+            category: "user_play",
+            isUserCreated: true,
+            costLevel: costLevel
+        )
+        modelContext.insert(card)
+        try? modelContext.save()
+    }
+
+    /// 删除一个用户自定义玩啥卡
+    func deleteUserActivityCard(_ card: Card) {
+        guard let modelContext, card.isUserCreated else { return }
+        modelContext.delete(card)
+        try? modelContext.save()
+    }
+
+    /// 查找或创建"我的点子"卡池
+    private func findOrCreateUserActivityPool(scene: DecisionScene) -> CardPool? {
+        guard let modelContext else { return nil }
+        let sceneID = scene.id
+        let allPools = (try? modelContext.fetch(FetchDescriptor<CardPool>())) ?? []
+        let userPools = allPools.filter { $0.scene?.id == sceneID && $0.isUserCreated }
+        if let existing = userPools.first(where: { $0.name == "我的点子" }) {
+            return existing
+        }
+        let pool = CardPool(
+            name: "我的点子",
+            icon: "person.crop.circle.fill",
+            sortOrder: 100,
+            isUserCreated: true,
+            scene: scene
+        )
+        modelContext.insert(pool)
+        return pool
+    }
 }
