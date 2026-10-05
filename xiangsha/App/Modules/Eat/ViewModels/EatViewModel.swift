@@ -19,6 +19,7 @@ final class EatViewModel {
     var engine: DrawEngine
     var scene: DecisionScene?
     var selectedPool: CardPool?
+    var pools: [CardPool] = []
     var userProfileSnapshot: UserProfileSnapshot = UserProfileSnapshot()
     var lastResult: DrawResult?
     var isLoading: Bool = false
@@ -191,6 +192,7 @@ final class EatViewModel {
                 try? await Task.sleep(nanoseconds: 100_000_000)
             }
             let scenePools = allPools.filter { $0.scene?.id == sceneID }
+            self.pools = scenePools  // 让 PoolPickerView 始终有数据可显示
             let currentTime = TimeOfDay.from()
             // 「在家做」卡池任何时段都匹配；其他时段卡池按名字前缀匹配
             let preferred = scenePools.first { pool in

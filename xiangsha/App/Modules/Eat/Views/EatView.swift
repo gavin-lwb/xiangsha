@@ -63,7 +63,7 @@ struct EatView: View {
                 if let scene = eatScenes.first {
                     EatContentView(
                         scene: scene,
-                        pools: scene.cardPools,
+                        pools: viewModel.pools.isEmpty ? scene.cardPools : viewModel.pools,
                         profile: profiles.first,
                         viewModel: viewModel,
                         weather: weatherService.currentWeather,
@@ -235,10 +235,10 @@ private struct EatContentView: View {
                 // D137 天气 banner（🦊 推荐）
                 WeatherBanner(weather: weather, bodyText: weatherText)
 
-                // 卡池选择器（如有多个）
-                if pools.count > 1 {
+                // 卡池选择器（始终显示让用户能切池，即使只 1 个池也能看到当前选中）
+                if !viewModel.pools.isEmpty {
                     PoolPickerView(
-                        pools: pools,
+                        pools: viewModel.pools,
                         selectedPoolId: $viewModel.selectedPool,
                         timeFilter: $timeFilter,
                         difficultyFilter: $difficultyFilter
