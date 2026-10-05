@@ -193,6 +193,11 @@ private struct EatContentView: View {
     @State private var cookingCard: Card?
     // Pattern 6：今日组合底部抽屉
     @State private var showComboSheet: Bool = false
+    // D037：分享卡 sheet
+    @State private var shareCard: Card?
+    // D043：二级筛选条件
+    @State private var timeFilter: SecondaryFilter = .any
+    @State private var difficultyFilter: SecondaryFilter = .any
 
     @Environment(\.modelContext) private var detailContext
 
@@ -212,7 +217,12 @@ private struct EatContentView: View {
 
                 // 卡池选择器（如有多个）
                 if pools.count > 1 {
-                    PoolPickerView(pools: pools, selectedPoolId: $viewModel.selectedPool)
+                    PoolPickerView(
+                        pools: pools,
+                        selectedPoolId: $viewModel.selectedPool,
+                        timeFilter: $timeFilter,
+                        difficultyFilter: $difficultyFilter
+                    )
                 }
 
                 // D046 已解锁进度条
@@ -287,6 +297,25 @@ private struct EatContentView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, ThemeSpacing.sm)
                     }
+
+                    // D037/D038 · 「📤 分享」按钮
+                    Button {
+                        if let card = lookupCard(id: result.card.id) {
+                            shareCard = card
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("📤 分享给朋友")
+                        }
+                        .font(Font.theme.bodyEmphasis)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, ThemeSpacing.sm)
+                        .background(Color.theme.accentSubtle, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+                        .foregroundStyle(Color.theme.accent)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal)
 
                     // 评分反馈气泡
                     if let feedback = viewModel.ratingFeedback {
@@ -432,6 +461,12 @@ private struct EatContentView: View {
                 .presentationDetents([.height(360), .medium])
                 .presentationDragIndicator(.visible)
         }
+        // D037：分享卡 sheet
+        .sheet(item: $shareCard) { card in
+            ShareCardSheet(card: card)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
         .onAppear {
             viewModel.refreshCookedProgress()
         }
@@ -474,32 +509,243 @@ private struct SceneHeaderView: View {
 private struct PoolPickerView: View {
     let pools: [CardPool]
     @Binding var selectedPoolId: CardPool?
+    @Binding var timeFilter: SecondaryFilter
+    @Binding var difficultyFilter: SecondaryFilter
+    @State private var longPressedPool: CardPool?
+    @State private var showAdvancedSheet: Bool = false
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: ThemeSpacing.xs) {
-                ForEach(pools) { pool in
-                    Button(action: { selectedPoolId = pool }) {
-                        Text(pool.name)
-                            .font(Font.theme.caption)
-                            .padding(.horizontal, ThemeSpacing.sm)
-                            .padding(.vertical, ThemeSpacing.xxs)
-                            .background(
-                                    selectedPoolId?.id == pool.id
-                                        ? Color.theme.accent
-                                        : Color.theme.surface,
-                                    in: Capsule()
-                                )
-                                .foregroundStyle(
-                                    selectedPoolId?.id == pool.id
-                                        ? Color.theme.textOnPrimary
-                                        : Color.theme.textPrimary
-                                )
+        VStack(spacing: ThemeSpacing.xs) {
+            // 时段 chip 行（D034 长按手势 · 单击切换）
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: ThemeSpacing.xs) {
+                    ForEach(pools) { pool in
+                        Button(action: { selectedPoolId = pool }) {
+                            Text(pool.name)
+                                .font(Font.theme.caption)
+                                .padding(.horizontal, ThemeSpacing.sm)
+                                .padding(.vertical, ThemeSpacing.xxs)
+                                .background(
+                                        selectedPoolId?.id == pool.id
+                                            ? Color.theme.accent
+                                            : Color.theme.surface,
+                                        in: Capsule()
+                                    )
+                                    .foregroundStyle(
+                                        selectedPoolId?.id == pool.id
+                                            ? Color.theme.textOnPrimary
+                                            : Color.theme.textPrimary
+                                    )
+                        }
+                        .buttonStyle(.plain)
+                        // D034 · 长按 0.5s 弹菜单
+                        .onLongPressGesture(minimumDuration: 0.5) {
+                            longPressedPool = pool
+                        }
                     }
-                    .buttonStyle(.plain)
                 }
+                .padding(.horizontal)
+            }
+
+            // D043 · 二级筛选 chip 行（时间 + 难度）
+            HStack(spacing: ThemeSpacing.xs) {
+                SecondaryFilterChip(
+                    icon: "clock.fill",
+                    label: "时间",
+                    filter: $timeFilter,
+                    options: [("不限", nil), ("快", .fast(15)), ("中", .medium(30)), ("慢", .slow(60))]
+                )
+                SecondaryFilterChip(
+                    icon: "chart.bar.fill",
+                    label: "难度",
+                    filter: $difficultyFilter,
+                    options: [("不限", nil), ("简单", .easy(1)), ("中等", .medium(3)), ("挑战", .hard(5))]
+                )
+                Button {
+                    showAdvancedSheet = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "slider.horizontal.3")
+                            .font(.caption)
+                        Text("更多筛选")
+                            .font(Font.theme.caption)
+                    }
+                    .padding(.horizontal, ThemeSpacing.sm)
+                    .padding(.vertical, ThemeSpacing.xxs)
+                    .background(Color.theme.surface, in: Capsule())
+                    .foregroundStyle(Color.theme.textSecondary)
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
             }
             .padding(.horizontal)
+        }
+        // D034 · 长按弹菜单
+        .confirmationDialog(
+            longPressedPool?.name ?? "",
+            isPresented: Binding(
+                get: { longPressedPool != nil },
+                set: { if !$0 { longPressedPool = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("切换到「\(longPressedPool?.name ?? "")」") {
+                if let pool = longPressedPool { selectedPoolId = pool }
+            }
+            Button("设为最爱时段", role: nil) {
+                // TODO: 后续接 UserProfile.favoriteTimeOfDay
+            }
+            Button("隐藏此池", role: .destructive) {
+                // v1 不支持卡池级隐藏（D016 仅 Card 级）
+                // 保留入口，后续可加 CardPool.isHidden 字段
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("长按时段 chip 可切换 / 设为最爱 / 隐藏")
+        }
+        // D040 · 半屏 Sheet 更多筛选
+        .sheet(isPresented: $showAdvancedSheet) {
+            AdvancedFilterSheet(
+                timeFilter: $timeFilter,
+                difficultyFilter: $difficultyFilter,
+                pools: pools,
+                selectedPoolId: $selectedPoolId
+            )
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
+    }
+}
+
+/// 二级筛选条件
+enum SecondaryFilter: Equatable, Hashable {
+    case any
+    case fast(Int)     // 时间 ≤ N 分钟
+    case medium(Int)
+    case slow(Int)
+    case easy(Int)     // 难度 = N
+    case mediumLevel(Int)
+    case hard(Int)
+
+    var displayName: String {
+        switch self {
+        case .any: return "不限"
+        case .fast: return "快"
+        case .medium: return "中"
+        case .slow: return "慢"
+        case .easy: return "简单"
+        case .mediumLevel: return "中等"
+        case .hard: return "挑战"
+        }
+    }
+
+    var value: Int? {
+        switch self {
+        case .any: return nil
+        case let .fast(v), let .medium(v), let .slow(v),
+             let .easy(v), let .mediumLevel(v), let .hard(v):
+            return v
+        }
+    }
+}
+
+/// 二级筛选 chip
+private struct SecondaryFilterChip: View {
+    let icon: String
+    let label: String
+    @Binding var filter: SecondaryFilter
+    let options: [(String, SecondaryFilter?)]
+
+    var body: some View {
+        Menu {
+            ForEach(Array(options.enumerated()), id: \.offset) { _, opt in
+                Button(opt.0) {
+                    filter = opt.1 ?? .any
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.caption)
+                Text(label)
+                    .font(Font.theme.caption)
+                if filter != .any {
+                    Text("· \(filter.displayName)")
+                        .font(Font.theme.caption2)
+                }
+                Image(systemName: "chevron.down")
+                    .font(.caption2)
+            }
+            .padding(.horizontal, ThemeSpacing.sm)
+            .padding(.vertical, ThemeSpacing.xxs)
+            .background(
+                filter == .any ? Color.theme.surface : Color.theme.accentSubtle,
+                in: Capsule()
+            )
+            .foregroundStyle(
+                filter == .any ? Color.theme.textSecondary : Color.theme.accent
+            )
+        }
+    }
+}
+
+/// D040 · 更多筛选半屏 Sheet
+private struct AdvancedFilterSheet: View {
+    @Binding var timeFilter: SecondaryFilter
+    @Binding var difficultyFilter: SecondaryFilter
+    let pools: [CardPool]
+    @Binding var selectedPoolId: CardPool?
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("时段卡池") {
+                    ForEach(pools) { pool in
+                        Button {
+                            selectedPoolId = pool
+                        } label: {
+                            HStack {
+                                Image(systemName: pool.icon)
+                                    .foregroundStyle(Color.theme.accent)
+                                Text(pool.name)
+                                    .foregroundStyle(Color.theme.textPrimary)
+                                Spacer()
+                                if selectedPoolId?.id == pool.id {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(Color.theme.accent)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Section("时间") {
+                    Picker("时间", selection: $timeFilter) {
+                        Text("不限").tag(SecondaryFilter.any)
+                        Text("快 ≤ 15 分钟").tag(SecondaryFilter.fast(15))
+                        Text("中 ≤ 30 分钟").tag(SecondaryFilter.medium(30))
+                        Text("慢 ≤ 60 分钟").tag(SecondaryFilter.slow(60))
+                    }
+                }
+
+                Section("难度") {
+                    Picker("难度", selection: $difficultyFilter) {
+                        Text("不限").tag(SecondaryFilter.any)
+                        Text("简单 ⭐").tag(SecondaryFilter.easy(1))
+                        Text("中等 ⭐⭐⭐").tag(SecondaryFilter.mediumLevel(3))
+                        Text("挑战 ⭐⭐⭐⭐⭐").tag(SecondaryFilter.hard(5))
+                    }
+                }
+            }
+            .navigationTitle("更多筛选")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("完成") { dismiss() }
+                }
+            }
         }
     }
 }
