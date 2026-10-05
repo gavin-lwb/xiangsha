@@ -122,6 +122,7 @@ struct DebugPanelView: View {
     // MARK: - Actions
 
     private func clearAllData() {
+        // 删除所有数据（含 profile），让 SeedService.seedIfNeeded 触发（它检查 profile count == 0）
         for card in allCards { modelContext.delete(card) }
         for fav in allFavorites { modelContext.delete(fav) }
         for rec in allDrawRecords { modelContext.delete(rec) }
@@ -133,10 +134,7 @@ struct DebugPanelView: View {
             modelContext.delete(scene)
         }
         for profile in profiles {
-            profile.drawsToday = 0
-            profile.earnedAchievements = []
-            // ⚠️ 不关闭 DEBUG 模式（避免 AppSettingsView 重渲染导致 sheet 状态丢失）
-            profile.updatedAt = Date()
+            modelContext.delete(profile)
         }
         try? modelContext.save()
         // 重新播种（异步，避免阻塞）
