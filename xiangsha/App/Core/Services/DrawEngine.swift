@@ -486,6 +486,17 @@ struct RuleBasedEngine: DrawEngine {
                 rejected = ("mainIngredientRepeat", 0.0)
             }
 
+            // T16 时段硬屏（D032 · availableTimes 不空且不含当前时段 → 排除）
+            //
+            // 「在家做」卡的 availableTimes 覆盖全部 5 个时段，永远通过；
+            // 时段池的卡 availableTimes 为空（默认），所以也通过——表示"任何时段都能抽"。
+            // 真正生效的是用户主动标 availableTimes 的卡（如"夜宵专属"卡不会被午餐抽到）。
+            if rejected == nil,
+               !card.availableTimes.isEmpty,
+               !card.availableTimes.contains(context.timeOfDay) {
+                rejected = ("timeOfDayMismatch", 0.0)
+            }
+
             if let rejected {
                 excludedFactors.append(FactorApplication(
                     factorName: rejected.name,
@@ -591,6 +602,23 @@ struct RuleBasedEngine: DrawEngine {
             // 时段因子（占位简化：未实现 per-pool 默认映射）
             // SPEC §A.3 时段因子：card.pool == defaultPool(timeOfDay) ? 1.0 : 0.5
             // 需要 CardPool.type 别名字段，v1.1 再加
+
+            // T14 季节软调权（D048 · seasonWeights）
+            //
+            // 若 Card.seasonWeights 显式填了当前季节的权重（>0 且 ≠1），就应用。
+            // 例：冬天吃火锅 ×1.5、夏天吃冰品 ×1.3。
+            if let weights = card.seasonWeights,
+               let seasonWeight = weights[Season.current(date: context.now)],
+               seasonWeight != 1.0 {
+                let before = weight
+                weight *= seasonWeight
+                factors.append(FactorApplication(
+                    factorName: "seasonWeight",
+                    cardID: card.id,
+                    multiplierBefore: before,
+                    multiplierAfter: weight
+                ))
+            }
 
             let ref = DrawnCardRef(from: card, isFavorite: false)
             return (ref, weight, factors)

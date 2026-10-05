@@ -12,7 +12,7 @@ import SwiftData
 /// 卡片实体（SPEC §10.1 实体 #3）
 ///
 /// 抽签引擎的核心数据单元。每张 Card 属于一个 DecisionScene + 一个 CardPool，
-/// 携带 17 个业务字段 + 3 个关系（scene / pool / 占位）。
+/// 携带 24 个业务字段 + 2 个关系（scene / pool）。
 ///
 /// 关系拓扑：
 /// - `scene`：n → 1 DecisionScene（删除场景时本卡 `.nullify` 保留为孤儿）
@@ -82,6 +82,27 @@ final class Card {
     /// 全部用 String 以保持 SwiftData 原生 Codable 支持。
     var metadata: [String: String]?
 
+    /// 用餐场景（D030 · 默认 `.takeout` 因 v1 大部分卡是外卖）
+    var scenario: EatScenario
+
+    /// 适用的时段列表（D032 · 默认空；「在家做」卡池的卡覆盖全部 5 个时段）
+    var availableTimes: [TimeOfDay]
+
+    /// 季节软调权（D048 · 可选；未设置 = 不参与季节调权）
+    var seasonWeights: [Season: Double]?
+
+    /// 菜系（D027 · 可选；未设置 = 不参与菜系软调权）
+    var cuisine: Cuisine?
+
+    /// 价格档（D028 · 可选；未设置 = UI 不显示 💰）
+    var priceRange: PriceRange?
+
+    /// 菜谱（D041 · 可选；只有「在家做」卡会填）
+    var recipe: Recipe?
+
+    /// 适合几人份（D055 · 可选；未设置 = UI 不显示「🍽️ 适合 X 人」）
+    var serves: Int?
+
     /// 所属场景（n → 1）
     ///
     /// 当 DecisionScene 删除时，本卡 sceneID 保留（denormalized）但本引用置空。
@@ -105,7 +126,14 @@ final class Card {
         timeMinutes: Int = 30,
         weight: Double = 1.0,
         metadata: [String: String]? = nil,
-        isUserCreated: Bool = false
+        isUserCreated: Bool = false,
+        scenario: EatScenario = .takeout,
+        availableTimes: [TimeOfDay] = [],
+        seasonWeights: [Season: Double]? = nil,
+        cuisine: Cuisine? = nil,
+        priceRange: PriceRange? = nil,
+        recipe: Recipe? = nil,
+        serves: Int? = nil
     ) {
         self.id = UUID()
         self.title = title
@@ -126,6 +154,13 @@ final class Card {
         self.createdAt = now
         self.updatedAt = now
         self.metadata = metadata
+        self.scenario = scenario
+        self.availableTimes = availableTimes
+        self.seasonWeights = seasonWeights
+        self.cuisine = cuisine
+        self.priceRange = priceRange
+        self.recipe = recipe
+        self.serves = serves
         self.scene = scene
         self.pool = pool
     }
