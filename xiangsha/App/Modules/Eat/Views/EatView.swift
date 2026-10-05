@@ -188,115 +188,118 @@ private struct EatContentView: View {
     let onLinkRequest: (Card) -> Void
 
     var body: some View {
-        VStack(spacing: ThemeSpacing.lg) {
-            // 场景头部
-            SceneHeaderView(
-                title: scene.title,
-                icon: scene.icon,
-                greeting: viewModel.greetingText
-            )
-            .padding(.top, ThemeSpacing.md)
-
-            // D137 天气 banner（🦊 推荐）
-            WeatherBanner(weather: weather, bodyText: weatherText)
-
-            // 卡池选择器（如有多个）
-            if pools.count > 1 {
-                PoolPickerView(pools: pools, selectedPoolId: $viewModel.selectedPool)
-            }
-
-            // 主展示区
-            if let result = viewModel.lastResult {
-                DrawResultView(
-                    result: result,
-                    isFavorite: viewModel.isCurrentFavorite,
-                    onToggleFavorite: { viewModel.toggleFavorite() }
+        ScrollView {
+            VStack(spacing: ThemeSpacing.lg) {
+                // 场景头部
+                SceneHeaderView(
+                    title: scene.title,
+                    icon: scene.icon,
+                    greeting: viewModel.greetingText
                 )
+                .padding(.top, ThemeSpacing.md)
 
-                // D135 3 emoji 评分
-                EmojiRatingRow(
-                    currentRating: viewModel.currentRating,
-                    onRate: { emoji in viewModel.rate(emoji: emoji) }
-                )
+                // D137 天气 banner（🦊 推荐）
+                WeatherBanner(weather: weather, bodyText: weatherText)
 
-                // 评分反馈气泡
-                if let feedback = viewModel.ratingFeedback {
-                    RatingFeedbackBubble(
-                        text: feedback,
-                        onDismiss: { viewModel.clearRatingFeedback() }
-                    )
+                // 卡池选择器（如有多个）
+                if pools.count > 1 {
+                    PoolPickerView(pools: pools, selectedPoolId: $viewModel.selectedPool)
                 }
 
-                // D121 跨场景联动 banner
-                if let target = CrossSceneLinkService.recommendedTarget(for: .eat),
-                   let context = viewModel.modelContext,
-                   let recommend = CrossSceneLinkService.recommendCard(target: target, context: context) {
-                    CrossSceneBanner(
-                        sourceScene: .eat,
-                        targetScene: target,
-                        suggestedCardTitle: recommend.title,
-                        suggestedCardEmoji: recommend.emoji,
-                        onTap: { onLinkRequest(recommend) }
+                // 主展示区
+                if let result = viewModel.lastResult {
+                    DrawResultView(
+                        result: result,
+                        isFavorite: viewModel.isCurrentFavorite,
+                        onToggleFavorite: { viewModel.toggleFavorite() }
                     )
+
+                    // D135 3 emoji 评分
+                    EmojiRatingRow(
+                        currentRating: viewModel.currentRating,
+                        onRate: { emoji in viewModel.rate(emoji: emoji) }
+                    )
+
+                    // 评分反馈气泡
+                    if let feedback = viewModel.ratingFeedback {
+                        RatingFeedbackBubble(
+                            text: feedback,
+                            onDismiss: { viewModel.clearRatingFeedback() }
+                        )
+                    }
+
+                    // D121 跨场景联动 banner
+                    if let target = CrossSceneLinkService.recommendedTarget(for: .eat),
+                       let context = viewModel.modelContext,
+                       let recommend = CrossSceneLinkService.recommendCard(target: target, context: context) {
+                        CrossSceneBanner(
+                            sourceScene: .eat,
+                            targetScene: target,
+                            suggestedCardTitle: recommend.title,
+                            suggestedCardEmoji: recommend.emoji,
+                            onTap: { onLinkRequest(recommend) }
+                        )
+                    }
+
+                    // L2 过敏警告 banner（D088）
+                    if viewModel.showingAllergenWarning {
+                        AllergenWarningBanner(
+                            onAccept: { viewModel.accept() },
+                            onRedraw: { Task { await viewModel.redraw() } }
+                        )
+                    }
+                } else if viewModel.showingNoDecisionPanel {
+                    // D134 不决策模式面板
+                    NoDecisionPanel(
+                        onAction: { action in
+                            switch action {
+                            case .skip: viewModel.performNoDecisionAction(.skip)
+                            case .changeCategory: viewModel.performNoDecisionAction(.changeCategory)
+                            case .decideMyself: viewModel.performNoDecisionAction(.decideMyself)
+                            }
+                        }
+                    )
+                } else if let error = viewModel.error {
+                    DrawErrorView(error: error, onDismiss: { viewModel.dismissError() })
+                } else {
+                    EmptyDrawStateView()
                 }
 
-                // L2 过敏警告 banner（D088）
-                if viewModel.showingAllergenWarning {
-                    AllergenWarningBanner(
-                        onAccept: { viewModel.accept() },
-                        onRedraw: { Task { await viewModel.redraw() } }
-                    )
-                }
-            } else if viewModel.showingNoDecisionPanel {
-                // D134 不决策模式面板
-                NoDecisionPanel(
-                    onAction: { action in
-                        switch action {
-                        case .skip: viewModel.performNoDecisionAction(.skip)
-                        case .changeCategory: viewModel.performNoDecisionAction(.changeCategory)
-                        case .decideMyself: viewModel.performNoDecisionAction(.decideMyself)
+                // 主按钮
+                PrimaryActionButton(
+                    title: viewModel.primaryButtonText,
+                    isLoading: viewModel.isLoading,
+                    action: {
+                        if viewModel.lastResult != nil {
+                            viewModel.accept()
+                            onAcceptComplete()
+                        } else {
+                            Task { await viewModel.draw() }
                         }
                     }
                 )
-            } else if let error = viewModel.error {
-                DrawErrorView(error: error, onDismiss: { viewModel.dismissError() })
-            } else {
-                EmptyDrawStateView()
-            }
 
-            Spacer()
-
-            // 主按钮
-            PrimaryActionButton(
-                title: viewModel.primaryButtonText,
-                isLoading: viewModel.isLoading,
-                action: {
-                    if viewModel.lastResult != nil {
-                        viewModel.accept()
-                        onAcceptComplete()
-                    } else {
-                        Task { await viewModel.draw() }
+                // 次按钮（结果存在时显示）
+                if viewModel.showsSecondaryActions {
+                    HStack(spacing: ThemeSpacing.md) {
+                        SecondaryActionButton(
+                            title: "换一签 🔁",
+                            action: { Task { await viewModel.redraw() } }
+                        )
+                        SecondaryActionButton(
+                            title: "拒绝 🙅",
+                            action: { viewModel.reject() }
+                        )
                     }
+                    .padding(.horizontal)
                 }
-            )
 
-            // 次按钮（结果存在时显示）
-            if viewModel.showsSecondaryActions {
-                HStack(spacing: ThemeSpacing.md) {
-                    SecondaryActionButton(
-                        title: "换一签 🔁",
-                        action: { Task { await viewModel.redraw() } }
-                    )
-                    SecondaryActionButton(
-                        title: "拒绝 🙅",
-                        action: { viewModel.reject() }
-                    )
-                }
-                .padding(.horizontal)
+                // 底部留白
+                Color.clear.frame(height: ThemeSpacing.lg)
             }
+            .padding(.horizontal, ThemeSpacing.md)
+            .padding(.bottom, ThemeSpacing.lg)
         }
-        .padding(.horizontal, ThemeSpacing.md)
-        .padding(.bottom, ThemeSpacing.lg)
     }
 }
 
