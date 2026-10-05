@@ -200,6 +200,8 @@ private struct EatContentView: View {
     @State private var difficultyFilter: SecondaryFilter = .any
     // D092：首抽引导气泡
     @State private var showFirstDrawHint: Bool = false
+    // D047/D056：v1.1 roadmap sheet
+    @State private var showRoadmapSheet: Bool = false
 
     @Environment(\.modelContext) private var detailContext
 
@@ -232,6 +234,9 @@ private struct EatContentView: View {
                     cookedCount: viewModel.cookedCount,
                     totalCount: viewModel.totalCardsCount
                 )
+                .onTapGesture {
+                    showRoadmapSheet = true
+                }
 
                 // 主展示区
                 if let result = viewModel.lastResult {
@@ -475,6 +480,12 @@ private struct EatContentView: View {
         // D037：分享卡 sheet
         .sheet(item: $shareCard) { card in
             ShareCardSheet(card: card)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
+        // D047/D056 · v1.1 Roadmap sheet
+        .sheet(isPresented: $showRoadmapSheet) {
+            V1RoadmapSheet()
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
