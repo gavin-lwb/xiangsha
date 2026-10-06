@@ -34,7 +34,7 @@ struct PhotoView: View {
                 if let scene = photoScenes.first {
                     PhotoContentView(
                         scene: scene,
-                        pools: scene.cardPools,
+                        pools: viewModel.pools.isEmpty ? scene.cardPools : viewModel.pools,
                         profile: profiles.first,
                         viewModel: viewModel,
                         onAcceptComplete: { checkAchievements() },

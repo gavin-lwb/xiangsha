@@ -25,6 +25,8 @@ final class PhotoViewModel {
     var currentRating: EmojiRating?
     var ratingFeedback: String?
     var isCurrentFavorite: Bool = false
+    /// 当前 Scene 的所有卡池（viewModel 主动 fetch，避免 SwiftData 关联查询为空）
+    var pools: [CardPool] = []
 
     var modelContext: ModelContext?
 
@@ -52,6 +54,8 @@ final class PhotoViewModel {
                 try? await Task.sleep(nanoseconds: 100_000_000)
             }
             self.selectedPool = allPools.first { $0.scene?.id == sceneID }
+            // 让 PoolPickerView 有数据可显示
+            self.pools = allPools.filter { $0.scene?.id == sceneID }
         }
     }
 
