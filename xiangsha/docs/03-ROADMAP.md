@@ -340,9 +340,9 @@
 
 - [ ] **修复决策号跳号问题** ✅ v1.2 已完成（D132-D138 已补全）
 - [ ] **统一项目名为 xiangsha** ✅ v1.2 已完成（CI/CD scheme + §0 元信息）
-- [ ] **拆分 docs/privacy-policy.md 并部署 GitHub Pages**（D103）
-- [ ] **补 `PrivacyInfo.xcprivacy`**（§11.4.1）
-- [ ] **写 `docs/fox-persona.md` 小狐狸人格化文案清单 ≥ 100 条**（D136）
+- [x] ~~**拆分 docs/privacy-policy.md 并部署 GitHub Pages**~~（D103）✅ MD 已写（`Resources/privacy-policy.md`），**GitHub Pages 部署待办**（R01 致命）
+- [x] ~~**补 `PrivacyInfo.xcprivacy`**~~（§11.4.1）✅ `Resources/PrivacyInfo.xcprivacy` 已就位（30 行）
+- [x] ~~**写 `docs/fox-persona.md` 小狐狸人格化文案清单 ≥ 100 条**~~（D136）✅ 400 行，远超下限
 - [ ] **降权公式两段衰减** ✅ v1.2 已完成（D005）
 - [ ] **删除 L3 兜底** ✅ v1.2 已完成（D007 改为两级）
 - [ ] **新增「不决策模式」决策** ✅ v1.2 已完成（D134）
@@ -355,8 +355,26 @@
 - [ ] **补 D133 启动预热策略** ✅ v1.2 已完成
 - [ ] **补 D137 天气感知** ✅ v1.2 已完成
 - [ ] **补 D138 Schema 迁移代码规范** ✅ v1.2 已完成
-- [ ] **拆分文档为 4 文件（PRD / SPEC / AGENTS / ROADMAP）** ← M1 启动前必须执行
+- [x] ~~**拆分文档为 4 文件（PRD / SPEC / AGENTS / ROADMAP）**~~ ✅ **v1.4 已完成**（DEVELOPMENT.md §0 索引确认）
 - [x] ~~用户确认模块 B 二选一（喝啥 vs 点子库 · D.1）~~ ✅ **v1.3 已拍板：玩啥 · 点子库**
+
+---
+
+### G.1.1 当前真实 P0（2026-10-06 同步 · OpenClaw Team Leader 回填）
+
+> 下方只列**实际仍待办**的 P0 项。**已完成的 P0 已在 G.1 主表中勾选并 strike**（详见上表）。
+
+| # | 待办 | 阻塞 | 估时 | 推荐执行人 |
+|---|---|---|---|---|
+| **P0-1** | **M0 内容生产**（274 张卡 · emoji/文案/字段/中英双语） | M1-M3 完成后无卡可抽 | 3 周单人 / 1.5-2 周多人 | 用户 + 分身 agent 协作 |
+| **P0-2** | **隐私政策 GitHub Pages 部署**（R01 致命） | 上架审核 | 1 小时 | OpenClaw Lead |
+| **P0-3** | **单元测试覆盖**（VM/Shared 几乎为 0） | 任何 fix/* 都裸奔 | 2 周（每个 VM 1 个 smoke test） | OpenClaw Lead + iOS 队友 |
+| **P0-4** | **README.md 仍是 Gitee 默认模板** | 新协作者 onboarding | 30 分钟 | OpenClaw Lead |
+
+> **优先级**：P0-2 > P0-4 > P0-1 > P0-3
+> **执行顺序建议**：P0-2 今天做掉 → P0-4 顺手做掉 → P0-1 立项启动 → P0-3 持续推进
+
+---
 
 ### G.2 P1（v1.0 发布前 1 个月 · M6 期间）
 
