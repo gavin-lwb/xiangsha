@@ -483,3 +483,30 @@ v1.2 是「文档级最后迭代」，下一步进入 **SPEC.md 拆分 + 工程�
 ---
 
 > **v1.2 文档状态**：内部一致性 4/5、致命 bug 全修、138 决策全敲定、待用户决策 3 件事。**可立即进入 SPEC.md 拆分阶段**。
+
+---
+
+## 附录 H · 2026-10-06 夜间收工快照
+
+> 小白 token 紧张，主动收工。所有当前状态见 `memory/handoff-2026-10-06.md`。
+
+**当前完成**：
+- P0-2 隐私政策 ✅
+- P0-4 README ✅
+- P0-3 T1 Test Target 接入 ✅
+- P0-3 T2 T05 引擎 bug 修复 ✅
+- P0-1 M0 Batch 1 起草（21 张吃啥）✅
+
+**待办（按优先级）**：
+1. T07/T08/T09 验证 + 修 flaky
+2. Codex CLI 工具链解锁（重启 session）
+3. 用户终审 M0 Batch 1
+4. M0 Batch 2（玩啥 80 张）
+5. Coverage + GitHub Actions
+
+**关键经验**：
+- Codex CLI spawn 配置 bug 致工具链死锁
+- drawEngine T05 阈值语义：「≥ 上限才 ban」需推广到其他 cooldown 字段
+- Lead MCP 桥接不到时降级到 Lead 亲自干
+
+详细交接清单：`memory/handoff-2026-10-06.md`
