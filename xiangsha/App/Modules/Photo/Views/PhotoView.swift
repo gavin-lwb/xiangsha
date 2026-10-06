@@ -131,6 +131,10 @@ private struct PhotoContentView: View {
             }
             .padding(.top, ThemeSpacing.md)
 
+            if pools.count > 1 {
+                PhotoPoolPickerStrip(pools: pools, selectedPool: $viewModel.selectedPool)
+            }
+
             if let result = viewModel.lastResult {
                 PhotoDrawResultView(
                     result: result,
@@ -422,4 +426,38 @@ private struct PhotoFeedbackBubble: View {
 /// 辅助：UUID 用于 sheet(item:) 的 Identifiable 包装
 private struct PhotoIdentifiableUUID: Identifiable, Equatable {
     let id: UUID
+}
+
+/// 卡池选择器横条（拍啥模块）
+private struct PhotoPoolPickerStrip: View {
+    let pools: [CardPool]
+    @Binding var selectedPool: CardPool?
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: ThemeSpacing.xs) {
+                ForEach(pools) { pool in
+                    Button(action: { selectedPool = pool }) {
+                        Text(pool.name)
+                            .font(Font.theme.caption)
+                            .padding(.horizontal, ThemeSpacing.sm)
+                            .padding(.vertical, ThemeSpacing.xxs)
+                            .background(
+                                selectedPool?.id == pool.id
+                                    ? Color.theme.accent
+                                    : Color.theme.surface,
+                                in: Capsule()
+                            )
+                            .foregroundStyle(
+                                selectedPool?.id == pool.id
+                                    ? Color.theme.textOnPrimary
+                                    : Color.theme.textPrimary
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal)
+        }
+    }
 }
