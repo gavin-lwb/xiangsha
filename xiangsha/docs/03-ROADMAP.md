@@ -369,11 +369,12 @@
 | **P0-1** | **M0 内容生产**（274 张卡 · emoji/文案/字段/中英双语） | M1-M3 完成后无卡可抽 | 3 周单人 / 1.5-2 周多人 | 用户 + 分身 agent 协作（含 maben 写作支援） | 待启动 |
 | ~~**P0-2**~~ | ~~**隐私政策 GitHub Pages 部署**（R01 致命）~~ | ~~上架审核~~ | ~~1 小时~~ | ~~OpenClaw Lead~~ | ✅ **已完成 2026-10-06**（仓库迁移到 `gavin-lwb/xiangsha`，Pages 启用，AppSettingsView URL 已修） |
 | ~~**P0-4**~~ | ~~**README 重写**（产品门面 · onboarding）~~ | ~~新协作者 onboarding~~ | ~~30 分钟~~ | ~~OpenClaw Lead~~ | ✅ **已完成 2026-10-06**（中文 + 英文双语版，含 4 模块概览 / 快速开始 / 工程结构 / 文档索引 / 进度条） |
-| **P0-3** | **单元测试覆盖**（VM/Shared 几乎为 0） | 任何 fix/* 都裸奔 | 2 周（每个 VM 1 个 smoke test） | Claude Code 主力 + OpenClaw Lead review | 进行中（TestFixturesVM 已实跑） |
+| **P0-3** | **单元测试覆盖**（VM/Shared 几乎为 0） | 任何 fix/* 都裸奔 | 2 周（每个 VM 1 个 smoke test） | Claude Code 主力 + OpenClaw Lead review | 进行中（Test Target 接入完成 commit 6430771 · 35 测试中 34 绿 · T05 待修 · T2-A 待启动） |
 
-> **已完成**：P0-2（隐私政策 GitHub Pages 部署）· P0-4（README 重写 · 中英双语）— 仓库从 `gitee.com/wind-paper/xiangsha` 迁移到 `github.com/gavin-lwb/xiangsha`，Pages URL = `https://gavin-lwb.github.io/xiangsha/xiangsha/Resources/privacy-policy.md`
-> **优先级**：P0-1 > P0-3
-> **执行顺序建议**：P0-3 派 Claude Code 启动 → P0-1 立项启动（OpenClaw 起草 + maben 润色 + 用户终审）
+> **已完成**：P0-2（隐私政策 GitHub Pages 部署）· P0-4（README 重写 · 中英双语）· P0-3 T1（Test Target 接入 · 34/35 测试绿）
+> **进行中**：P0-3 T2（修 DrawEngine T05 + coverage 报告）· P0-1 M0 Batch 1（Codex CLI 起草 A 吃啥 21 张）
+> **优先级**：P0-3 T2 > P0-1 > P0-3 T3 (CI)
+> **执行顺序建议**：Claude Code 派 T2-A 修 T05 → Codex 交付 Batch 1 → Lead review 集成 SeedData
 
 ---
 

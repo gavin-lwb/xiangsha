@@ -142,7 +142,8 @@ Most project docs are in Chinese. Translating them is on the v1.1+ roadmap.
 - [x] **P0-2 Privacy Policy on GitHub Pages** (2026-10-06) ✅
 - [x] **P0-4 README rewrite** (2026-10-06) ✅
 - [ ] P0-1 M0 content production (274 cards · multi-agent in progress)
-- [ ] P0-3 Unit test target setup (Claude Code leading)
+- [x] **P0-3 T1 Unit test target setup** (2026-10-06 · commit 6430771 · 34/35 tests green · Claude Code leading)
+- [ ] P0-3 T2 fix DrawEngine T05 + coverage report (Claude Code in progress)
 - [ ] M1 Universal draw engine + Module A eat basics
 - [ ] M2 Cook-at-home extension + maturity
 - [ ] M3 Play + Do modules

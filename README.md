@@ -142,7 +142,8 @@ xiangsha/
 - [x] **P0-2 隐私政策 GitHub Pages 部署**（2026-10-06）✅
 - [x] **P0-4 README 重写**（2026-10-06）✅
 - [ ] P0-1 M0 内容生产（274 张卡 · 多人协作中）
-- [ ] P0-3 单元测试 Test Target 接入（Claude Code 主力）
+- [x] **P0-3 T1 单元测试 Test Target 接入**（2026-10-06 · commit 6430771 · 34/35 测试绿 · Claude Code 主力）
+- [ ] P0-3 T2 修 DrawEngine T05 + coverage 报告（Claude Code 进行中）
 - [ ] M1 通用抽签引擎 + 模块 A 吃啥基础
 - [ ] M2 在家做扩展 + 成熟度
 - [ ] M3 玩啥 + 做啥
