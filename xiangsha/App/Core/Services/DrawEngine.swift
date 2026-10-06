@@ -80,8 +80,8 @@ struct DrawEngineConfig {
     var categoryMaxPer24h: Int = 2
     /// 硬屏：品牌 7d 内最多几次（默认 1）
     var brandMaxPer7d: Int = 1
-    /// 硬屏：主料 24h 内最多几次（默认 0 → 强制去重）
-    var mainIngredientMaxPer24h: Int = 0
+    /// 硬屏：主料 24h 内最多几次（默认 1 → 允许出现 1 次，≥2 次才 ban）
+    var mainIngredientMaxPer24h: Int = 1
     /// 软调权：收藏加权（×1.2 上限）
     var favoriteBoost: Double = 1.2
     /// 软调权：新卡加权（×1.3 上限）
@@ -491,7 +491,7 @@ struct RuleBasedEngine: DrawEngine {
             // T05 主料去重（D007 mainIngredientMaxPer24h）
             if rejected == nil,
                let mainIngredient = card.metadata?["mainIngredient"],
-               user.mainIngredientCount24h[mainIngredient, default: 0] >= config.mainIngredientMaxPer24h {
+               user.mainIngredientCount24h[mainIngredient, default: 0] > config.mainIngredientMaxPer24h {
                 rejected = ("mainIngredientRepeat", 0.0)
             }
 
