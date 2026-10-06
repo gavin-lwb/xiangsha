@@ -17,6 +17,7 @@ final class PlayViewModel {
     var engine: DrawEngine = RuleBasedEngine()
     var scene: DecisionScene?
     var selectedPool: CardPool?
+    var pools: [CardPool] = []
     var userProfileSnapshot: UserProfileSnapshot = UserProfileSnapshot()
     var lastResult: DrawResult?
     var isLoading: Bool = false
@@ -52,6 +53,7 @@ final class PlayViewModel {
                 try? await Task.sleep(nanoseconds: 100_000_000)
             }
             let scenePools = allPools.filter { $0.scene?.id == sceneID }
+            self.pools = scenePools  // 让 PoolPickerView 始终有数据可显示
             // D059 · 按当前时段自动选 pool（午后偏室外，其余按名字包含匹配）
             let hour = Calendar.current.component(.hour, from: Date())
             let preferred: CardPool?

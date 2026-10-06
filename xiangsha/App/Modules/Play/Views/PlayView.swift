@@ -34,7 +34,7 @@ struct PlayView: View {
                 if let scene = playScenes.first {
                     PlayContentView(
                         scene: scene,
-                        pools: scene.cardPools,
+                        pools: viewModel.pools.isEmpty ? scene.cardPools : viewModel.pools,
                         profile: profiles.first,
                         viewModel: viewModel,
                         onAcceptComplete: { checkAchievements() },
