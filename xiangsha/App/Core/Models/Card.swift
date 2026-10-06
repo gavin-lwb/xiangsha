@@ -33,9 +33,9 @@ final class Card {
 
     /// 卡片标题（中文 / 英文 / emoji）
     ///
-    /// - @Attribute(.spotlight)：Spotlight 系统搜索支持（SPEC §10.4）
     /// - @Attribute(.unique) 不加（允许同名卡如多张"麻婆豆腐"）
-    @Attribute(.spotlight) var title: String
+    /// - 去掉 .spotlight（v1 占位，会触发 CoreData Spotlight 初始化警告，导致 draw() 失败）
+    var title: String
 
     /// 用户覆盖的自定义标题（可选；显示时优先用 customTitle）
     var customTitle: String?

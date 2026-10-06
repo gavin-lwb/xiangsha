@@ -13,10 +13,10 @@ import SwiftUI
 ///
 /// 用户接受抽签结果后，进入"做"模式（做菜 / 完成任务 / 拍照）。
 /// 不同的 card.type 对应不同的 TaskRunner 实现。
+///
+/// 注：协议只规定 card 属性，body 由 View 协议自动提供（避免重复声明警告）。
 protocol TaskRunner: View {
-    associatedtype Body: View
     var card: Card { get }
-    @ViewBuilder var body: Self.Body { get }
 }
 
 /// 菜谱执行器（D044 · 在家做专用）
