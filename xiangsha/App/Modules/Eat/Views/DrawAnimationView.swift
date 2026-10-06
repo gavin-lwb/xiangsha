@@ -95,30 +95,53 @@ struct DrawAnimationView: View {
                     .padding(.bottom, ThemeSpacing.xl)
             }
         }
-        // 重写：直接 .task 顺序推进 stage（不依赖 withAnimation / DispatchQueue）
-        // 之前实现用 DispatchQueue.main.asyncAfter + withAnimation，多次抽取时 task 取消
-        // 导致 stage 卡在 .loading。现在用 .task 串行 await，每次都强制推进。
-        .task(id: card?.id ?? UUID()) {
-            // 重置
-            emojiScale = 0.6
-            emojiOpacity = 0
-            titleOpacity = 0
-            stage = .loading
+        // 关键修复：用 .onChange(of: card) 替代 .task(id: card?.id ?? UUID())
+        // 原因：之前 card 为 nil 时用 UUID() 兜底，card 后续变化时 .task 不会重启
+        // 导致 stage 走完 loading→reveal→result 时 card 仍是 nil，看不到内容
+        .onChange(of: card?.id) { _, newID in
+            if newID != nil {
+                startAnimation()
+            }
+        }
+        .onAppear {
+            // 第一次进入时如果 card 已有值，立即启动动画
+            if card != nil {
+                startAnimation()
+            }
+        }
+    }
 
-            // loading 阶段持续 800ms（不管 card 状态）
+    /// 启动完整动画序列（重置 + loading → reveal → result）
+    private func startAnimation() {
+        // 重置所有 stage 状态
+        emojiScale = 0.6
+        emojiOpacity = 0
+        titleOpacity = 0
+        stage = .loading
+
+        // 启动 loading 动画（旋转 + 呼吸）
+        withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+            loadingScale = 1.15
+        }
+        withAnimation(.linear(duration: 1.2).repeatForever(autoreverses: false)) {
+            spinAngle = 360
+        }
+
+        // 顺序推进 stage（用 Task 异步 sleep）
+        Task { @MainActor in
             try? await Task.sleep(nanoseconds: 800_000_000)
-
-            // → reveal：emoji 揭幕
             stage = .reveal
             emojiScale = 1.0
             emojiOpacity = 1.0
-
-            // reveal 阶段持续 800ms
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.65)) {
+                emojiScale = 1.0
+                emojiOpacity = 1.0
+            }
             try? await Task.sleep(nanoseconds: 800_000_000)
-
-            // → result：标题 + 元数据淡入
             stage = .result
-            titleOpacity = 1.0
+            withAnimation(.easeIn(duration: 0.3)) {
+                titleOpacity = 1.0
+            }
         }
     }
 
