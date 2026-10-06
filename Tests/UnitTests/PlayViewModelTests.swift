@@ -17,6 +17,7 @@ import XCTest
 import SwiftData
 @testable import xiangsha
 
+@MainActor
 final class PlayViewModelTests: XCTestCase {
 
     // MARK: - T-VM-B01
@@ -66,7 +67,7 @@ final class PlayViewModelTests: XCTestCase {
 
     // MARK: - T-VM-B05
 
-    func testVM_B05_playAndEatScenesAreSeparate() throws {
+    nonisolated(unsafe) func testVM_B05_playAndEatScenesAreSeparate() throws {
         // D057：玩啥与吃啥场景物理隔离
         let eatScene = TestFixturesVM.makeScene(type: .eat)
         let playScene = TestFixturesVM.makeScene(type: .play)

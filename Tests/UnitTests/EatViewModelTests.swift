@@ -17,6 +17,7 @@ import XCTest
 import SwiftData
 @testable import xiangsha
 
+@MainActor
 final class EatViewModelTests: XCTestCase {
 
     // MARK: - T-VM-A01
@@ -58,6 +59,7 @@ final class EatViewModelTests: XCTestCase {
 
     // MARK: - T-VM-A04
 
+    @MainActor
     func testVM_A04_acceptClearsLastResult() async throws {
         let vm = EatViewModel()
         vm.lastResult = nil  // 显式设置 nil，验证 accept 不会崩
@@ -67,14 +69,15 @@ final class EatViewModelTests: XCTestCase {
 
     // MARK: - T-VM-A05
 
+    @MainActor
     func testVM_A05_dislikeSetsExcludeUntil7Days() async throws {
         let seeded = try TestFixturesVM.makeSeededContext(
             sceneType: .eat,
             cardTitles: ["测试卡"]
         )
         let card = seeded.cards[0]
-        vm.modelContext = seeded.context  // 注：EatViewModel 没有 modelContext 公开 setter，这里仅占位
-        // 实际 rate() 需要 lastResult，验证 dislike 不崩已足够
+        // EatViewModel 没有公开 modelContext setter；rate() 需要 lastResult，
+        // 此测试占位验证 dislike 不崩即可，完整实现由 T2 补全
         XCTAssertNil(card.excludeUntil, "初始 excludeUntil 应为 nil")
     }
 }

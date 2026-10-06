@@ -18,6 +18,7 @@ import XCTest
 import SwiftData
 @testable import xiangsha
 
+@MainActor
 final class PhotoViewModelTests: XCTestCase {
 
     // MARK: - T-VM-D01

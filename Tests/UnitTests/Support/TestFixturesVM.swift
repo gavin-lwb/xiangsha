@@ -36,7 +36,7 @@ enum TestFixturesVM {
         let schema = Schema(versionedSchema: xiangshaSchemaV1_3.self)
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(
-            for: xiangshaSchemaV1_3.self,
+            for: schema,
             configurations: config
         )
         return ModelContext(container)

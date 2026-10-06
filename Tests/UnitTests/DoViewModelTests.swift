@@ -17,6 +17,7 @@ import XCTest
 import SwiftData
 @testable import xiangsha
 
+@MainActor
 final class DoViewModelTests: XCTestCase {
 
     // MARK: - T-VM-C01

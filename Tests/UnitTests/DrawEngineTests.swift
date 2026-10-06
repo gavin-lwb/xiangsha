@@ -11,6 +11,7 @@
 
 import XCTest
 import Foundation
+@testable import xiangsha
 
 /// 抽签引擎单元测试（SPEC §A.9）
 ///

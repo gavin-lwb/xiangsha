@@ -1,0 +1,6 @@
+
+# Claude Code 接入 test target 时的回滚备份
+xiangsha.xcodeproj/project.pbxproj.bak-*
+
+# OpenClaw Lead 任务派发 scratch space
+.team-dispatch/
