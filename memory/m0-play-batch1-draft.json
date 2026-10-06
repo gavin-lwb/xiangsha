@@ -1,0 +1,3470 @@
+{
+  "_meta": {
+    "draft": true,
+    "module": "B.玩啥",
+    "batch": 1,
+    "count": 80,
+    "pools": [
+      "B1-室内·单人 (16)",
+      "B2-室内·多人 (16)",
+      "B3-室外·单人 (12)",
+      "B4-室外·多人 (12)",
+      "B5-创作类 (12)",
+      "B6-学习类 (12)"
+    ],
+    "generator": "Codex CLI",
+    "generated_at": "2026-10-07T01:30:00+08:00",
+    "needs_user_review": true,
+    "notes": [
+      "中英双语 + emoji + costLevel (free/low/high) 必填",
+      "6 池分布: B1 16 + B2 16 + B3 12 + B4 12 + B5 12 + B6 12 = 80",
+      "allergens 显式 []（玩啥通常没过敏原）",
+      "与吃啥完全不重叠（D057-D063）",
+      "prepTips / pairing 用真实活动名 + 真实场景，避开 AI 塑料味"
+    ]
+  },
+  "cards": [
+    {
+      "id": "play-b1-01",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "玩一把独立游戏",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "lunch",
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "PC 或主机",
+          "Steam 账号"
+        ],
+        "prepTips": "先在 Steam 看好 demo 或好友推荐",
+        "pairing": "可乐 + 沙发"
+      },
+      "en-US": {
+        "title": "Play an Indie Game",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "lunch",
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "PC 或主机",
+          "Steam 账号"
+        ],
+        "prepTips": "Pick a Steam demo or ask friends for recs",
+        "pairing": "Cola + couch"
+      }
+    },
+    {
+      "id": "play-b1-02",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "追一集番剧",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 45,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "平板或电视",
+          "会员账号"
+        ],
+        "prepTips": "选一部追了一半的番",
+        "pairing": "薯片 + 奶茶"
+      },
+      "en-US": {
+        "title": "Watch an Anime Episode",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 45,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "平板或电视",
+          "会员账号"
+        ],
+        "prepTips": "Pick an anime already mid-series",
+        "pairing": "Chips + milk tea"
+      }
+    },
+    {
+      "id": "play-b1-03",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "拼一盒乐高",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "乐高套装",
+          "零件分拣盘"
+        ],
+        "prepTips": "提前把零件按颜色分盘",
+        "pairing": "咖啡 + 背景音乐"
+      },
+      "en-US": {
+        "title": "Build a Lego Set",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "乐高套装",
+          "零件分拣盘"
+        ],
+        "prepTips": "Sort pieces by color in trays first",
+        "pairing": "Coffee + lo-fi music"
+      }
+    },
+    {
+      "id": "play-b1-04",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "写日记",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 20,
+        "availableTimes": [
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "本子",
+          "笔"
+        ],
+        "prepTips": "不必写很多，三行也行",
+        "pairing": "热茶 + 安静"
+      },
+      "en-US": {
+        "title": "Journal Writing",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 20,
+        "availableTimes": [
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "本子",
+          "笔"
+        ],
+        "prepTips": "Three lines is enough",
+        "pairing": "Hot tea + quiet"
+      }
+    },
+    {
+      "id": "play-b1-05",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "听一期播客",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 45,
+        "availableTimes": [
+          "lunch",
+          "tea",
+          "commute"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "耳机",
+          "小宇宙或 Apple Podcast"
+        ],
+        "prepTips": "选 1-2 小时内的节目",
+        "pairing": "散步 + 耳机"
+      },
+      "en-US": {
+        "title": "Listen to a Podcast",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 45,
+        "availableTimes": [
+          "lunch",
+          "tea",
+          "commute"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "耳机",
+          "小宇宙或 Apple Podcast"
+        ],
+        "prepTips": "Pick an episode under 2 hours",
+        "pairing": "Walk + earphones"
+      }
+    },
+    {
+      "id": "play-b1-06",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "解一道数独",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 20,
+        "availableTimes": [
+          "lunch",
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "数独题",
+          "铅笔 + 橡皮"
+        ],
+        "prepTips": "选中等难度起步",
+        "pairing": "茶 + 安静角落"
+      },
+      "en-US": {
+        "title": "Solve a Sudoku",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 20,
+        "availableTimes": [
+          "lunch",
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "数独题",
+          "铅笔 + 橡皮"
+        ],
+        "prepTips": "Start at medium difficulty",
+        "pairing": "Tea + quiet corner"
+      }
+    },
+    {
+      "id": "play-b1-07",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "看一本漫画",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 30,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "漫画书或电子版",
+          "毯子"
+        ],
+        "prepTips": "选轻松题材别上头",
+        "pairing": "零食 + 沙发毯"
+      },
+      "en-US": {
+        "title": "Read Manga",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 30,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "漫画书或电子版",
+          "毯子"
+        ],
+        "prepTips": "Pick something light",
+        "pairing": "Snacks + blanket"
+      }
+    },
+    {
+      "id": "play-b1-08",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "练一页钢笔字",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 20,
+        "availableTimes": [
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "钢笔",
+          "字帖",
+          "墨水"
+        ],
+        "prepTips": "选喜欢的字帖",
+        "pairing": "茶 + 安静"
+      },
+      "en-US": {
+        "title": "Practice Pen Calligraphy",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 20,
+        "availableTimes": [
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "钢笔",
+          "字帖",
+          "墨水"
+        ],
+        "prepTips": "Choose a style you like",
+        "pairing": "Tea + quiet"
+      }
+    },
+    {
+      "id": "play-b1-09",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "玩一局魔方",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 15,
+        "availableTimes": [
+          "lunch",
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "三阶魔方",
+          "计时器 app"
+        ],
+        "prepTips": "学一个公式不要贪多",
+        "pairing": "计时器 + 背景乐"
+      },
+      "en-US": {
+        "title": "Practice Rubik's Cube",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 15,
+        "availableTimes": [
+          "lunch",
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "三阶魔方",
+          "计时器 app"
+        ],
+        "prepTips": "Learn one formula at a time",
+        "pairing": "Timer + music"
+      }
+    },
+    {
+      "id": "play-b1-10",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "做 15 分钟冥想",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 15,
+        "availableTimes": [
+          "morning",
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "瑜伽垫（可选）",
+          "Insight Timer"
+        ],
+        "prepTips": "关灯 + 计时",
+        "pairing": "蜡烛 + 安静"
+      },
+      "en-US": {
+        "title": "15-min Meditation",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 15,
+        "availableTimes": [
+          "morning",
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "瑜伽垫（可选）",
+          "Insight Timer"
+        ],
+        "prepTips": "Lights off + timer on",
+        "pairing": "Candle + silence"
+      }
+    },
+    {
+      "id": "play-b1-11",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "做一页拼贴",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 30,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "剪刀",
+          "胶水",
+          "旧杂志"
+        ],
+        "prepTips": "提前翻一本旧杂志",
+        "pairing": "咖啡 + 音乐"
+      },
+      "en-US": {
+        "title": "Make a Collage Page",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 30,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "剪刀",
+          "胶水",
+          "旧杂志"
+        ],
+        "prepTips": "Flip through old magazines first",
+        "pairing": "Coffee + music"
+      }
+    },
+    {
+      "id": "play-b1-12",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "玩一关 Switch",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 45,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "Switch",
+          "手柄",
+          "会员（如需联机）"
+        ],
+        "prepTips": "选轻松游戏别选魂系",
+        "pairing": "饮料 + 沙发"
+      },
+      "en-US": {
+        "title": "Play a Switch Level",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 45,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "Switch",
+          "手柄",
+          "会员（如需联机）"
+        ],
+        "prepTips": "Pick something cozy, not soulslike",
+        "pairing": "Drink + couch"
+      }
+    },
+    {
+      "id": "play-b1-13",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "听一张黑胶",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 40,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "黑胶唱片机",
+          "唱片"
+        ],
+        "prepTips": "选氛围音乐别选重鼓点",
+        "pairing": "茶 + 沙发"
+      },
+      "en-US": {
+        "title": "Spin a Vinyl Record",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 40,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "黑胶唱片机",
+          "唱片"
+        ],
+        "prepTips": "Pick mood music, no heavy drums",
+        "pairing": "Tea + couch"
+      }
+    },
+    {
+      "id": "play-b1-14",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "翻一本旧相册",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 25,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "旧相册",
+          "手机（拍照备份）"
+        ],
+        "prepTips": "顺手把特别喜欢的拍下来备份",
+        "pairing": "茶 + 回忆"
+      },
+      "en-US": {
+        "title": "Flip an Old Photo Album",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 25,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "旧相册",
+          "手机（拍照备份）"
+        ],
+        "prepTips": "Snap your favorites to back up",
+        "pairing": "Tea + memories"
+      }
+    },
+    {
+      "id": "play-b1-15",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "学折一朵纸花",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 30,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "折纸",
+          "剪刀（可选）"
+        ],
+        "prepTips": "看 YouTube / B 站教程",
+        "pairing": "茶 + 轻音乐"
+      },
+      "en-US": {
+        "title": "Fold a Paper Flower",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 30,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "折纸",
+          "剪刀（可选）"
+        ],
+        "prepTips": "Watch YouTube / Bilibili tutorial",
+        "pairing": "Tea + light music"
+      }
+    },
+    {
+      "id": "play-b1-16",
+      "scene": "play",
+      "pool": "室内·单人",
+      "category": "indoor-solo",
+      "zh-CN": {
+        "title": "做一盏手工蜡烛",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "大豆蜡",
+          "香精",
+          "模具",
+          "温度计"
+        ],
+        "prepTips": "买 DIY 套装省事",
+        "pairing": "朋友 + 下午茶"
+      },
+      "en-US": {
+        "title": "DIY a Candle",
+        "emoji": "🎮",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "大豆蜡",
+          "香精",
+          "模具",
+          "温度计"
+        ],
+        "prepTips": "Buy a kit to save time",
+        "pairing": "Friends + afternoon tea"
+      }
+    },
+    {
+      "id": "play-b2-01",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "桌游夜",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "桌游 2-3 盒",
+          "零食",
+          "饮料"
+        ],
+        "prepTips": "先预约 4-6 人场",
+        "pairing": "可乐 + 薯片"
+      },
+      "en-US": {
+        "title": "Board Game Night",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "桌游 2-3 盒",
+          "零食",
+          "饮料"
+        ],
+        "prepTips": "Invite 4-6 players first",
+        "pairing": "Cola + chips"
+      }
+    },
+    {
+      "id": "play-b2-02",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "KTV 包夜",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 240,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "KTV 包间预订",
+          "歌单 app"
+        ],
+        "prepTips": "提前 2 天订包间",
+        "pairing": "啤酒 + 小食"
+      },
+      "en-US": {
+        "title": "KTV Marathon",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 240,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "KTV 包间预订",
+          "歌单 app"
+        ],
+        "prepTips": "Book the room 2 days ahead",
+        "pairing": "Beer + snacks"
+      }
+    },
+    {
+      "id": "play-b2-03",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "打扑克",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "扑克牌",
+          "小筹码（可选）"
+        ],
+        "prepTips": "不打钱的纯娱乐",
+        "pairing": "茶 + 花生"
+      },
+      "en-US": {
+        "title": "Poker Night",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "扑克牌",
+          "小筹码（可选）"
+        ],
+        "prepTips": "Play for fun, no real money",
+        "pairing": "Tea + peanuts"
+      }
+    },
+    {
+      "id": "play-b2-04",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "剧本杀",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 180,
+        "availableTimes": [
+          "dinner"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "剧本",
+          "DM / 主持人",
+          "场地"
+        ],
+        "prepTips": "提前一周约本",
+        "pairing": "奶茶 + 推理"
+      },
+      "en-US": {
+        "title": "Murder Mystery Game",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 180,
+        "availableTimes": [
+          "dinner"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "剧本",
+          "DM / 主持人",
+          "场地"
+        ],
+        "prepTips": "Book the script a week ahead",
+        "pairing": "Milk tea + deduction"
+      }
+    },
+    {
+      "id": "play-b2-05",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "打麻将",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 180,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "麻将机或手搓",
+          "茶水费"
+        ],
+        "prepTips": "凑齐 4 人再开局",
+        "pairing": "茶 + 瓜子"
+      },
+      "en-US": {
+        "title": "Mahjong Night",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 180,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "麻将机或手搓",
+          "茶水费"
+        ],
+        "prepTips": "Need 4 players to start",
+        "pairing": "Tea + sunflower seeds"
+      }
+    },
+    {
+      "id": "play-b2-06",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "密室逃脱",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "密室店预约",
+          "4-6 人队伍"
+        ],
+        "prepTips": "选恐怖程度低的入门本",
+        "pairing": "尖叫 + 拍照"
+      },
+      "en-US": {
+        "title": "Escape Room",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "密室店预约",
+          "4-6 人队伍"
+        ],
+        "prepTips": "Pick an easy non-horror theme",
+        "pairing": "Screams + photos"
+      }
+    },
+    {
+      "id": "play-b2-07",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "看电影聚会",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "投影或电视",
+          "影片",
+          "沙发"
+        ],
+        "prepTips": "轮流选片避免打架",
+        "pairing": "爆米花 + 饮料"
+      },
+      "en-US": {
+        "title": "Movie Night at Home",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "投影或电视",
+          "影片",
+          "沙发"
+        ],
+        "prepTips": "Take turns picking films",
+        "pairing": "Popcorn + drinks"
+      }
+    },
+    {
+      "id": "play-b2-08",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "打台球",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "台球厅",
+          "球杆"
+        ],
+        "prepTips": "新手选美式落袋",
+        "pairing": "啤酒 + 薯条"
+      },
+      "en-US": {
+        "title": "Pool Night",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "台球厅",
+          "球杆"
+        ],
+        "prepTips": "Pick 8-ball if you're new",
+        "pairing": "Beer + fries"
+      }
+    },
+    {
+      "id": "play-b2-09",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "保龄球局",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "保龄球馆",
+          "租鞋 + 租球"
+        ],
+        "prepTips": "工作日便宜一半",
+        "pairing": "可乐 + 炸鸡"
+      },
+      "en-US": {
+        "title": "Bowling Night",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "保龄球馆",
+          "租鞋 + 租球"
+        ],
+        "prepTips": "Weekday rates are half off",
+        "pairing": "Cola + fried chicken"
+      }
+    },
+    {
+      "id": "play-b2-10",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "Switch 联机赛",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "Switch 多台",
+          "手柄",
+          "会员"
+        ],
+        "prepTips": "选马里奥赛车或任天堂明星大乱斗",
+        "pairing": "零食 + 饮料"
+      },
+      "en-US": {
+        "title": "Switch Online Tournament",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "Switch 多台",
+          "手柄",
+          "会员"
+        ],
+        "prepTips": "Pick Mario Kart or Smash",
+        "pairing": "Snacks + drinks"
+      }
+    },
+    {
+      "id": "play-b2-11",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "飞镖比赛",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "飞镖",
+          "飞镖靶"
+        ],
+        "prepTips": "酒吧飞镖机即可",
+        "pairing": "啤酒 + 花生"
+      },
+      "en-US": {
+        "title": "Dart Tournament",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "飞镖",
+          "飞镖靶"
+        ],
+        "prepTips": "Pub dartboard works",
+        "pairing": "Beer + peanuts"
+      }
+    },
+    {
+      "id": "play-b2-12",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "德州之夜",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "扑克牌",
+          "塑料筹码"
+        ],
+        "prepTips": "小筹码纯娱乐，不涉赌",
+        "pairing": "咖啡 + 提神"
+      },
+      "en-US": {
+        "title": "Texas Hold'em Night",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "扑克牌",
+          "塑料筹码"
+        ],
+        "prepTips": "Plastic chips only, no real gambling",
+        "pairing": "Coffee + focus"
+      }
+    },
+    {
+      "id": "play-b2-13",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "一起做晚饭",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "食材",
+          "厨房"
+        ],
+        "prepTips": "提前列菜单分工",
+        "pairing": "红酒 + 厨房音乐"
+      },
+      "en-US": {
+        "title": "Cook Dinner Together",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "食材",
+          "厨房"
+        ],
+        "prepTips": "Plan menu + split tasks ahead",
+        "pairing": "Wine + kitchen playlist"
+      }
+    },
+    {
+      "id": "play-b2-14",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "玩谁是卧底",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 30,
+        "availableTimes": [
+          "lunch",
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "谁是卧底卡牌或 app"
+        ],
+        "prepTips": "5 人以上更好玩",
+        "pairing": "零食 + 投票"
+      },
+      "en-US": {
+        "title": "Who Is the Spy",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 30,
+        "availableTimes": [
+          "lunch",
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "谁是卧底卡牌或 app"
+        ],
+        "prepTips": "Works best with 5+ people",
+        "pairing": "Snacks + voting"
+      }
+    },
+    {
+      "id": "play-b2-15",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "你画我猜",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 30,
+        "availableTimes": [
+          "lunch",
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "白板或纸笔",
+          "词库 app"
+        ],
+        "prepTips": "下载现成词库省脑子",
+        "pairing": "茶 + 笑场"
+      },
+      "en-US": {
+        "title": "Pictionary",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 30,
+        "availableTimes": [
+          "lunch",
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "白板或纸笔",
+          "词库 app"
+        ],
+        "prepTips": "Use a word pack app",
+        "pairing": "Tea + laughs"
+      }
+    },
+    {
+      "id": "play-b2-16",
+      "scene": "play",
+      "pool": "室内·多人",
+      "category": "indoor-group",
+      "zh-CN": {
+        "title": "卡拉 OK 私房局",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "麦克风",
+          "全民 K 歌 / 唱吧",
+          "电视"
+        ],
+        "prepTips": "买一对无线麦更自由",
+        "pairing": "小食 + 鸡尾酒"
+      },
+      "en-US": {
+        "title": "Home Karaoke Party",
+        "emoji": "🎲",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "麦克风",
+          "全民 K 歌 / 唱吧",
+          "电视"
+        ],
+        "prepTips": "Get a wireless mic pair",
+        "pairing": "Snacks + cocktails"
+      }
+    },
+    {
+      "id": "play-b3-01",
+      "scene": "play",
+      "pool": "室外·单人",
+      "category": "outdoor-solo",
+      "zh-CN": {
+        "title": "公园散步",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 40,
+        "availableTimes": [
+          "morning",
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "舒适鞋",
+          "耳机"
+        ],
+        "prepTips": "选有树的公园",
+        "pairing": "耳机 + 鸟叫"
+      },
+      "en-US": {
+        "title": "Park Walk",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 40,
+        "availableTimes": [
+          "morning",
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "舒适鞋",
+          "耳机"
+        ],
+        "prepTips": "Pick a park with shade",
+        "pairing": "Earphones + birdsong"
+      }
+    },
+    {
+      "id": "play-b3-02",
+      "scene": "play",
+      "pool": "室外·单人",
+      "category": "outdoor-solo",
+      "zh-CN": {
+        "title": "城市骑行",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "morning",
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "自行车",
+          "头盔",
+          "水壶"
+        ],
+        "prepTips": "规划 10-15km 路线",
+        "pairing": "运动饮料 + 能量棒"
+      },
+      "en-US": {
+        "title": "City Cycling",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "morning",
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "自行车",
+          "头盔",
+          "水壶"
+        ],
+        "prepTips": "Plan a 10-15km route",
+        "pairing": "Sports drink + energy bar"
+      }
+    },
+    {
+      "id": "play-b3-03",
+      "scene": "play",
+      "pool": "室外·单人",
+      "category": "outdoor-solo",
+      "zh-CN": {
+        "title": "摄影采风",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "morning",
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "手机或相机",
+          "备用电池"
+        ],
+        "prepTips": "选一个有故事的街区",
+        "pairing": "咖啡 + 街角"
+      },
+      "en-US": {
+        "title": "Street Photography",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "morning",
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "手机或相机",
+          "备用电池"
+        ],
+        "prepTips": "Pick a neighborhood with character",
+        "pairing": "Coffee + street corners"
+      }
+    },
+    {
+      "id": "play-b3-04",
+      "scene": "play",
+      "pool": "室外·单人",
+      "category": "outdoor-solo",
+      "zh-CN": {
+        "title": "河边钓鱼",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 180,
+        "availableTimes": [
+          "morning",
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "鱼竿",
+          "鱼饵",
+          "小板凳"
+        ],
+        "prepTips": "查好禁渔区",
+        "pairing": "茶 + 安静"
+      },
+      "en-US": {
+        "title": "Riverside Fishing",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 180,
+        "availableTimes": [
+          "morning",
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "鱼竿",
+          "鱼饵",
+          "小板凳"
+        ],
+        "prepTips": "Check no-fishing zones first",
+        "pairing": "Tea + quiet"
+      }
+    },
+    {
+      "id": "play-b3-05",
+      "scene": "play",
+      "pool": "室外·单人",
+      "category": "outdoor-solo",
+      "zh-CN": {
+        "title": "登山徒步",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 240,
+        "availableTimes": [
+          "morning"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "登山鞋",
+          "水 1.5L",
+          "雨衣"
+        ],
+        "prepTips": "查天气和线路难度",
+        "pairing": "能量胶 + 矿泉水"
+      },
+      "en-US": {
+        "title": "Mountain Hike",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 240,
+        "availableTimes": [
+          "morning"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "登山鞋",
+          "水 1.5L",
+          "雨衣"
+        ],
+        "prepTips": "Check weather and trail difficulty",
+        "pairing": "Energy gel + water"
+      }
+    },
+    {
+      "id": "play-b3-06",
+      "scene": "play",
+      "pool": "室外·单人",
+      "category": "outdoor-solo",
+      "zh-CN": {
+        "title": "玩滑板",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "滑板",
+          "护具",
+          "头盔"
+        ],
+        "prepTips": "找广场或滑板公园",
+        "pairing": "运动饮料 + 创可贴"
+      },
+      "en-US": {
+        "title": "Skateboarding",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "滑板",
+          "护具",
+          "头盔"
+        ],
+        "prepTips": "Hit a plaza or skate park",
+        "pairing": "Sports drink + band-aids"
+      }
+    },
+    {
+      "id": "play-b3-07",
+      "scene": "play",
+      "pool": "室外·单人",
+      "category": "outdoor-solo",
+      "zh-CN": {
+        "title": "慢跑 5 公里",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 40,
+        "availableTimes": [
+          "morning",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "跑鞋",
+          "运动 app"
+        ],
+        "prepTips": "跑前拉伸 5 分钟",
+        "pairing": "运动饮料 + 拉伸"
+      },
+      "en-US": {
+        "title": "5K Jog",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 40,
+        "availableTimes": [
+          "morning",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "跑鞋",
+          "运动 app"
+        ],
+        "prepTips": "5-min warm-up first",
+        "pairing": "Sports drink + cooldown"
+      }
+    },
+    {
+      "id": "play-b3-08",
+      "scene": "play",
+      "pool": "室外·单人",
+      "category": "outdoor-solo",
+      "zh-CN": {
+        "title": "公园写生",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "morning",
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "速写本",
+          "铅笔或水彩"
+        ],
+        "prepTips": "带个折叠凳",
+        "pairing": "咖啡 + 风景"
+      },
+      "en-US": {
+        "title": "Park Sketching",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "morning",
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "速写本",
+          "铅笔或水彩"
+        ],
+        "prepTips": "Bring a folding stool",
+        "pairing": "Coffee + scenery"
+      }
+    },
+    {
+      "id": "play-b3-09",
+      "scene": "play",
+      "pool": "室外·单人",
+      "category": "outdoor-solo",
+      "zh-CN": {
+        "title": "公园打太极",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 30,
+        "availableTimes": [
+          "morning"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "宽松衣服",
+          "软底鞋"
+        ],
+        "prepTips": "跟视频学 24 式",
+        "pairing": "白开水 + 安静"
+      },
+      "en-US": {
+        "title": "Tai Chi in the Park",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 30,
+        "availableTimes": [
+          "morning"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "宽松衣服",
+          "软底鞋"
+        ],
+        "prepTips": "Follow a 24-form video",
+        "pairing": "Water + calm"
+      }
+    },
+    {
+      "id": "play-b3-10",
+      "scene": "play",
+      "pool": "室外·单人",
+      "category": "outdoor-solo",
+      "zh-CN": {
+        "title": "露台瑜伽",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 45,
+        "availableTimes": [
+          "morning",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "瑜伽垫",
+          "瑜伽 app"
+        ],
+        "prepTips": "选清晨或傍晚",
+        "pairing": "蜂蜜水 + 冥想"
+      },
+      "en-US": {
+        "title": "Rooftop Yoga",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 45,
+        "availableTimes": [
+          "morning",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "瑜伽垫",
+          "瑜伽 app"
+        ],
+        "prepTips": "Pick sunrise or sunset",
+        "pairing": "Honey water + meditation"
+      }
+    },
+    {
+      "id": "play-b3-11",
+      "scene": "play",
+      "pool": "室外·单人",
+      "category": "outdoor-solo",
+      "zh-CN": {
+        "title": "放风筝",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "风筝",
+          "手套"
+        ],
+        "prepTips": "选 3 级风左右的天气",
+        "pairing": "零食 + 草地"
+      },
+      "en-US": {
+        "title": "Fly a Kite",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "风筝",
+          "手套"
+        ],
+        "prepTips": "Need about 3-level breeze",
+        "pairing": "Snacks + grass"
+      }
+    },
+    {
+      "id": "play-b3-12",
+      "scene": "play",
+      "pool": "室外·单人",
+      "category": "outdoor-solo",
+      "zh-CN": {
+        "title": "公园观鸟",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "morning",
+          "tea"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "双筒望远镜（可选）",
+          "鸟书或 app"
+        ],
+        "prepTips": "清晨鸟类最活跃",
+        "pairing": "热茶 + 笔记本"
+      },
+      "en-US": {
+        "title": "Park Birdwatching",
+        "emoji": "🌳",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "morning",
+          "tea"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "双筒望远镜（可选）",
+          "鸟书或 app"
+        ],
+        "prepTips": "Birds are most active at dawn",
+        "pairing": "Hot tea + notebook"
+      }
+    },
+    {
+      "id": "play-b4-01",
+      "scene": "play",
+      "pool": "室外·多人",
+      "category": "outdoor-group",
+      "zh-CN": {
+        "title": "露营过夜",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 1440,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "帐篷",
+          "睡袋",
+          "头灯",
+          "食材"
+        ],
+        "prepTips": "提前订营地看天气",
+        "pairing": "烧烤 + 星空"
+      },
+      "en-US": {
+        "title": "Overnight Camping",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 1440,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "帐篷",
+          "睡袋",
+          "头灯",
+          "食材"
+        ],
+        "prepTips": "Book the site and check weather",
+        "pairing": "BBQ + starry sky"
+      }
+    },
+    {
+      "id": "play-b4-02",
+      "scene": "play",
+      "pool": "室外·多人",
+      "category": "outdoor-group",
+      "zh-CN": {
+        "title": "飞盘局",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "飞盘",
+          "分队背心"
+        ],
+        "prepTips": "8 人以上对抗赛更爽",
+        "pairing": "运动饮料 + 防晒"
+      },
+      "en-US": {
+        "title": "Frisbee Match",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "飞盘",
+          "分队背心"
+        ],
+        "prepTips": "8+ people for a real match",
+        "pairing": "Sports drink + sunscreen"
+      }
+    },
+    {
+      "id": "play-b4-03",
+      "scene": "play",
+      "pool": "室外·多人",
+      "category": "outdoor-group",
+      "zh-CN": {
+        "title": "烧烤聚会",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 240,
+        "availableTimes": [
+          "dinner"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "烤架",
+          "炭",
+          "食材",
+          "调料"
+        ],
+        "prepTips": "提前一天腌肉",
+        "pairing": "啤酒 + 烤串"
+      },
+      "en-US": {
+        "title": "BBQ Party",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 240,
+        "availableTimes": [
+          "dinner"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "烤架",
+          "炭",
+          "食材",
+          "调料"
+        ],
+        "prepTips": "Marinate meat the day before",
+        "pairing": "Beer + skewers"
+      }
+    },
+    {
+      "id": "play-b4-04",
+      "scene": "play",
+      "pool": "室外·多人",
+      "category": "outdoor-group",
+      "zh-CN": {
+        "title": "篮球 3v3",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "篮球",
+          "球鞋"
+        ],
+        "prepTips": "选室外半场",
+        "pairing": "运动饮料 + 拉伸"
+      },
+      "en-US": {
+        "title": "3v3 Basketball",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "篮球",
+          "球鞋"
+        ],
+        "prepTips": "Outdoor half-court",
+        "pairing": "Sports drink + stretch"
+      }
+    },
+    {
+      "id": "play-b4-05",
+      "scene": "play",
+      "pool": "室外·多人",
+      "category": "outdoor-group",
+      "zh-CN": {
+        "title": "足球局",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "足球",
+          "分队背心",
+          "球门"
+        ],
+        "prepTips": "约 10 人制",
+        "pairing": "佳得乐 + 香蕉"
+      },
+      "en-US": {
+        "title": "Football Match",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "足球",
+          "分队背心",
+          "球门"
+        ],
+        "prepTips": "Aim for 10 players",
+        "pairing": "Gatorade + banana"
+      }
+    },
+    {
+      "id": "play-b4-06",
+      "scene": "play",
+      "pool": "室外·多人",
+      "category": "outdoor-group",
+      "zh-CN": {
+        "title": "羽毛球双打",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "球拍",
+          "羽毛球",
+          "场地"
+        ],
+        "prepTips": "提前订室内场",
+        "pairing": "运动饮料 + 换装"
+      },
+      "en-US": {
+        "title": "Badminton Doubles",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "球拍",
+          "羽毛球",
+          "场地"
+        ],
+        "prepTips": "Book indoor court ahead",
+        "pairing": "Sports drink + change clothes"
+      }
+    },
+    {
+      "id": "play-b4-07",
+      "scene": "play",
+      "pool": "室外·多人",
+      "category": "outdoor-group",
+      "zh-CN": {
+        "title": "网球双打",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "网球拍",
+          "网球",
+          "场地"
+        ],
+        "prepTips": "网球场需要预订",
+        "pairing": "电解质水 + 毛巾"
+      },
+      "en-US": {
+        "title": "Tennis Doubles",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "网球拍",
+          "网球",
+          "场地"
+        ],
+        "prepTips": "Court needs reservation",
+        "pairing": "Electrolyte water + towel"
+      }
+    },
+    {
+      "id": "play-b4-08",
+      "scene": "play",
+      "pool": "室外·多人",
+      "category": "outdoor-group",
+      "zh-CN": {
+        "title": "沙滩排球",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "沙滩排球",
+          "分队"
+        ],
+        "prepTips": "选免费的公共沙滩",
+        "pairing": "椰子水 + 防晒"
+      },
+      "en-US": {
+        "title": "Beach Volleyball",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "沙滩排球",
+          "分队"
+        ],
+        "prepTips": "Public beach works",
+        "pairing": "Coconut water + sunscreen"
+      }
+    },
+    {
+      "id": "play-b4-09",
+      "scene": "play",
+      "pool": "室外·多人",
+      "category": "outdoor-group",
+      "zh-CN": {
+        "title": "公园野餐",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 180,
+        "availableTimes": [
+          "lunch",
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "野餐垫",
+          "食物",
+          "饮料",
+          "湿巾"
+        ],
+        "prepTips": "准备方便手拿的食物",
+        "pairing": "三明治 + 果汁"
+      },
+      "en-US": {
+        "title": "Park Picnic",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 180,
+        "availableTimes": [
+          "lunch",
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "野餐垫",
+          "食物",
+          "饮料",
+          "湿巾"
+        ],
+        "prepTips": "Pick finger food",
+        "pairing": "Sandwiches + juice"
+      }
+    },
+    {
+      "id": "play-b4-10",
+      "scene": "play",
+      "pool": "室外·多人",
+      "category": "outdoor-group",
+      "zh-CN": {
+        "title": "郊外徒步",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 240,
+        "availableTimes": [
+          "morning",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "登山鞋",
+          "水",
+          "雨衣"
+        ],
+        "prepTips": "选 5-8km 入门线路",
+        "pairing": "能量棒 + 拍照"
+      },
+      "en-US": {
+        "title": "Suburban Hike",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 240,
+        "availableTimes": [
+          "morning",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "登山鞋",
+          "水",
+          "雨衣"
+        ],
+        "prepTips": "Pick 5-8km entry trail",
+        "pairing": "Energy bar + photos"
+      }
+    },
+    {
+      "id": "play-b4-11",
+      "scene": "play",
+      "pool": "室外·多人",
+      "category": "outdoor-group",
+      "zh-CN": {
+        "title": "湖边划船",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "租船",
+          "防晒霜",
+          "手机防水袋"
+        ],
+        "prepTips": "穿救生衣不要省",
+        "pairing": "冰可乐 + 船头"
+      },
+      "en-US": {
+        "title": "Lake Boating",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "租船",
+          "防晒霜",
+          "手机防水袋"
+        ],
+        "prepTips": "Wear life jackets",
+        "pairing": "Iced cola + bow of boat"
+      }
+    },
+    {
+      "id": "play-b4-12",
+      "scene": "play",
+      "pool": "室外·多人",
+      "category": "outdoor-group",
+      "zh-CN": {
+        "title": "集体跑步 5K",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "morning"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "跑鞋",
+          "运动 app"
+        ],
+        "prepTips": "配速相近的人组队",
+        "pairing": "运动饮料 + 拉伸"
+      },
+      "en-US": {
+        "title": "Group 5K Run",
+        "emoji": "👥",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "morning"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "跑鞋",
+          "运动 app"
+        ],
+        "prepTips": "Pair with similar pace",
+        "pairing": "Sports drink + stretch"
+      }
+    },
+    {
+      "id": "play-b5-01",
+      "scene": "play",
+      "pool": "创作类",
+      "category": "creative",
+      "zh-CN": {
+        "title": "画一张水彩",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "水彩纸",
+          "水彩颜料",
+          "画笔"
+        ],
+        "prepTips": "买分装颜料省钱",
+        "pairing": "茶 + 阳光"
+      },
+      "en-US": {
+        "title": "Watercolor Painting",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "水彩纸",
+          "水彩颜料",
+          "画笔"
+        ],
+        "prepTips": "Buy sample pans to save",
+        "pairing": "Tea + sunlight"
+      }
+    },
+    {
+      "id": "play-b5-02",
+      "scene": "play",
+      "pool": "创作类",
+      "category": "creative",
+      "zh-CN": {
+        "title": "写一个短篇故事",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "笔记本或电脑"
+        ],
+        "prepTips": "先写 1000 字再说",
+        "pairing": "咖啡 + 音乐"
+      },
+      "en-US": {
+        "title": "Write a Short Story",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "笔记本或电脑"
+        ],
+        "prepTips": "Hit 1000 words first",
+        "pairing": "Coffee + music"
+      }
+    },
+    {
+      "id": "play-b5-03",
+      "scene": "play",
+      "pool": "创作类",
+      "category": "creative",
+      "zh-CN": {
+        "title": "拍一条短视频",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "手机",
+          "三脚架（可选）",
+          "剪辑 app"
+        ],
+        "prepTips": "先写 30 秒脚本",
+        "pairing": "饮料 + 收工"
+      },
+      "en-US": {
+        "title": "Shoot a Short Video",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "手机",
+          "三脚架（可选）",
+          "剪辑 app"
+        ],
+        "prepTips": "Write a 30-sec script first",
+        "pairing": "Drink + wrap"
+      }
+    },
+    {
+      "id": "play-b5-04",
+      "scene": "play",
+      "pool": "创作类",
+      "category": "creative",
+      "zh-CN": {
+        "title": "做一周手帐",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "手帐本",
+          "贴纸",
+          "胶带"
+        ],
+        "prepTips": "贴好本周大事件照片",
+        "pairing": "奶茶 + 贴纸"
+      },
+      "en-US": {
+        "title": "Weekly Journal Craft",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "手帐本",
+          "贴纸",
+          "胶带"
+        ],
+        "prepTips": "Glue in this week's photo moments",
+        "pairing": "Milk tea + stickers"
+      }
+    },
+    {
+      "id": "play-b5-05",
+      "scene": "play",
+      "pool": "创作类",
+      "category": "creative",
+      "zh-CN": {
+        "title": "做一件陶艺",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 180,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "陶艺工作室",
+          "围裙"
+        ],
+        "prepTips": "预约体验课即可",
+        "pairing": "红茶 + 等待烧制"
+      },
+      "en-US": {
+        "title": "Try Pottery",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 180,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "high",
+        "equipment": [
+          "陶艺工作室",
+          "围裙"
+        ],
+        "prepTips": "Book a trial class",
+        "pairing": "Black tea + wait for firing"
+      }
+    },
+    {
+      "id": "play-b5-06",
+      "scene": "play",
+      "pool": "创作类",
+      "category": "creative",
+      "zh-CN": {
+        "title": "编一段 beat",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "GarageBand 或 FL Studio",
+          "耳机"
+        ],
+        "prepTips": "先定 BPM 90-110",
+        "pairing": "咖啡 + 监听耳机"
+      },
+      "en-US": {
+        "title": "Produce a Beat",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "GarageBand 或 FL Studio",
+          "耳机"
+        ],
+        "prepTips": "Start at BPM 90-110",
+        "pairing": "Coffee + studio headphones"
+      }
+    },
+    {
+      "id": "play-b5-07",
+      "scene": "play",
+      "pool": "创作类",
+      "category": "creative",
+      "zh-CN": {
+        "title": "录一期播客",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "麦克风",
+          "录音软件",
+          "提纲"
+        ],
+        "prepTips": "先列 5 个问题提纲",
+        "pairing": "茶 + 聊天"
+      },
+      "en-US": {
+        "title": "Record a Podcast Episode",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "麦克风",
+          "录音软件",
+          "提纲"
+        ],
+        "prepTips": "Draft 5 questions first",
+        "pairing": "Tea + chat"
+      }
+    },
+    {
+      "id": "play-b5-08",
+      "scene": "play",
+      "pool": "创作类",
+      "category": "creative",
+      "zh-CN": {
+        "title": "拍一支 vlog",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "手机",
+          "稳定器（可选）"
+        ],
+        "prepTips": "定一个主题如「我的一天」",
+        "pairing": "饮料 + 剪辑"
+      },
+      "en-US": {
+        "title": "Film a Vlog",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "手机",
+          "稳定器（可选）"
+        ],
+        "prepTips": "Pick a theme like 'A day in my life'",
+        "pairing": "Drink + edit"
+      }
+    },
+    {
+      "id": "play-b5-09",
+      "scene": "play",
+      "pool": "创作类",
+      "category": "creative",
+      "zh-CN": {
+        "title": "做一块拼布",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "碎布",
+          "针线",
+          "剪刀"
+        ],
+        "prepTips": "先画设计图",
+        "pairing": "茶 + 慢节奏"
+      },
+      "en-US": {
+        "title": "Patchwork Quilt Square",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "碎布",
+          "针线",
+          "剪刀"
+        ],
+        "prepTips": "Sketch the design first",
+        "pairing": "Tea + slow pace"
+      }
+    },
+    {
+      "id": "play-b5-10",
+      "scene": "play",
+      "pool": "创作类",
+      "category": "creative",
+      "zh-CN": {
+        "title": "做一件手工首饰",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "串珠或金属配件",
+          "钳子"
+        ],
+        "prepTips": "买套装材料省事",
+        "pairing": "咖啡 + 音乐"
+      },
+      "en-US": {
+        "title": "Handmade Jewelry",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "串珠或金属配件",
+          "钳子"
+        ],
+        "prepTips": "Buy a starter kit",
+        "pairing": "Coffee + music"
+      }
+    },
+    {
+      "id": "play-b5-11",
+      "scene": "play",
+      "pool": "创作类",
+      "category": "creative",
+      "zh-CN": {
+        "title": "写一首短歌",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "吉他或钢琴（可选）",
+          "录音 app"
+        ],
+        "prepTips": "先哼一段旋律",
+        "pairing": "茶 + 录音"
+      },
+      "en-US": {
+        "title": "Write a Short Song",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 90,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "吉他或钢琴（可选）",
+          "录音 app"
+        ],
+        "prepTips": "Hum a melody first",
+        "pairing": "Tea + record"
+      }
+    },
+    {
+      "id": "play-b5-12",
+      "scene": "play",
+      "pool": "创作类",
+      "category": "creative",
+      "zh-CN": {
+        "title": "做一段定格动画",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "手机",
+          "三脚架",
+          "定格动画 app"
+        ],
+        "prepTips": "拍 50 张再连起来",
+        "pairing": "零食 + 耐心"
+      },
+      "en-US": {
+        "title": "Make Stop-motion Animation",
+        "emoji": "🎨",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 120,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "手机",
+          "三脚架",
+          "定格动画 app"
+        ],
+        "prepTips": "Shoot 50 frames first",
+        "pairing": "Snacks + patience"
+      }
+    },
+    {
+      "id": "play-b6-01",
+      "scene": "play",
+      "pool": "学习类",
+      "category": "learning",
+      "zh-CN": {
+        "title": "读一本书",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "一本想读很久的书",
+          "书签"
+        ],
+        "prepTips": "图书馆借或微信读书",
+        "pairing": "茶 + 沙发"
+      },
+      "en-US": {
+        "title": "Read a Book",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 1,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "一本想读很久的书",
+          "书签"
+        ],
+        "prepTips": "Borrow from library or use WeChat Read",
+        "pairing": "Tea + couch"
+      }
+    },
+    {
+      "id": "play-b6-02",
+      "scene": "play",
+      "pool": "学习类",
+      "category": "learning",
+      "zh-CN": {
+        "title": "学一门外语",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 30,
+        "availableTimes": [
+          "morning",
+          "lunch",
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "Duolingo 或多邻国",
+          "耳机"
+        ],
+        "prepTips": "每天 15 分钟坚持",
+        "pairing": "咖啡 + 重复"
+      },
+      "en-US": {
+        "title": "Study a Foreign Language",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 30,
+        "availableTimes": [
+          "morning",
+          "lunch",
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "Duolingo 或多邻国",
+          "耳机"
+        ],
+        "prepTips": "15 min a day beats a marathon",
+        "pairing": "Coffee + repetition"
+      }
+    },
+    {
+      "id": "play-b6-03",
+      "scene": "play",
+      "pool": "学习类",
+      "category": "learning",
+      "zh-CN": {
+        "title": "学编程入门",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "电脑",
+          "免费在线课"
+        ],
+        "prepTips": "先选 Python 或 JavaScript",
+        "pairing": "茶 + IDE"
+      },
+      "en-US": {
+        "title": "Learn Coding Basics",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "电脑",
+          "免费在线课"
+        ],
+        "prepTips": "Start with Python or JavaScript",
+        "pairing": "Tea + IDE"
+      }
+    },
+    {
+      "id": "play-b6-04",
+      "scene": "play",
+      "pool": "学习类",
+      "category": "learning",
+      "zh-CN": {
+        "title": "学烘焙",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 180,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "烤箱",
+          "面粉",
+          "黄油",
+          "鸡蛋"
+        ],
+        "prepTips": "新手做饼干或玛芬",
+        "pairing": "牛奶 + 出炉"
+      },
+      "en-US": {
+        "title": "Try Baking",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 180,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "烤箱",
+          "面粉",
+          "黄油",
+          "鸡蛋"
+        ],
+        "prepTips": "Start with cookies or muffins",
+        "pairing": "Milk + fresh out of oven"
+      }
+    },
+    {
+      "id": "play-b6-05",
+      "scene": "play",
+      "pool": "学习类",
+      "category": "learning",
+      "zh-CN": {
+        "title": "学摄影入门",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "相机或手机",
+          "免费教程"
+        ],
+        "prepTips": "先学三分法和曝光三角",
+        "pairing": "咖啡 + 复习"
+      },
+      "en-US": {
+        "title": "Photography 101",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "相机或手机",
+          "免费教程"
+        ],
+        "prepTips": "Learn rule of thirds + exposure triangle",
+        "pairing": "Coffee + review"
+      }
+    },
+    {
+      "id": "play-b6-06",
+      "scene": "play",
+      "pool": "学习类",
+      "category": "learning",
+      "zh-CN": {
+        "title": "学书法",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 45,
+        "availableTimes": [
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "毛笔",
+          "墨汁",
+          "宣纸",
+          "字帖"
+        ],
+        "prepTips": "从颜真卿楷书入门",
+        "pairing": "茶 + 安静"
+      },
+      "en-US": {
+        "title": "Learn Calligraphy",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 45,
+        "availableTimes": [
+          "tea",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "毛笔",
+          "墨汁",
+          "宣纸",
+          "字帖"
+        ],
+        "prepTips": "Start with Yan Zhenqing regular script",
+        "pairing": "Tea + quiet"
+      }
+    },
+    {
+      "id": "play-b6-07",
+      "scene": "play",
+      "pool": "学习类",
+      "category": "learning",
+      "zh-CN": {
+        "title": "学围棋",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "围棋 app 或实体棋盘"
+        ],
+        "prepTips": "看 9 路小棋盘入门",
+        "pairing": "茶 + 复盘"
+      },
+      "en-US": {
+        "title": "Learn Go",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 4,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "围棋 app 或实体棋盘"
+        ],
+        "prepTips": "Start on a 9x9 board",
+        "pairing": "Tea + review"
+      }
+    },
+    {
+      "id": "play-b6-08",
+      "scene": "play",
+      "pool": "学习类",
+      "category": "learning",
+      "zh-CN": {
+        "title": "学咖啡冲煮",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "morning",
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "手冲壶",
+          "滤杯",
+          "咖啡豆",
+          "磨豆机"
+        ],
+        "prepTips": "新手先买 V60 套装",
+        "pairing": "咖啡 + 试喝"
+      },
+      "en-US": {
+        "title": "Learn Coffee Brewing",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "morning",
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "手冲壶",
+          "滤杯",
+          "咖啡豆",
+          "磨豆机"
+        ],
+        "prepTips": "Get a V60 starter kit",
+        "pairing": "Coffee + taste"
+      }
+    },
+    {
+      "id": "play-b6-09",
+      "scene": "play",
+      "pool": "学习类",
+      "category": "learning",
+      "zh-CN": {
+        "title": "学调酒",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "调酒套装",
+          "基酒",
+          "量杯"
+        ],
+        "prepTips": "从 Gin Tonic 和 Mojito 入手",
+        "pairing": "调酒 + 试饮"
+      },
+      "en-US": {
+        "title": "Learn Mixology",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "调酒套装",
+          "基酒",
+          "量杯"
+        ],
+        "prepTips": "Start with G&T and Mojito",
+        "pairing": "Cocktails + tasting"
+      }
+    },
+    {
+      "id": "play-b6-10",
+      "scene": "play",
+      "pool": "学习类",
+      "category": "learning",
+      "zh-CN": {
+        "title": "学尤克里里",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 45,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "尤克里里",
+          "调音器 app"
+        ],
+        "prepTips": "买 23 寸入门款",
+        "pairing": "茶 + 练习"
+      },
+      "en-US": {
+        "title": "Learn Ukulele",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 3,
+        "timeMinutes": 45,
+        "availableTimes": [
+          "tea",
+          "dinner"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "尤克里里",
+          "调音器 app"
+        ],
+        "prepTips": "Get a 23-inch starter uke",
+        "pairing": "Tea + practice"
+      }
+    },
+    {
+      "id": "play-b6-11",
+      "scene": "play",
+      "pool": "学习类",
+      "category": "learning",
+      "zh-CN": {
+        "title": "上一门公开课",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "电脑",
+          "Coursera / B 站 / 学堂在线"
+        ],
+        "prepTips": "选一门名校入门课",
+        "pairing": "茶 + 笔记"
+      },
+      "en-US": {
+        "title": "Take an Open Course",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea",
+          "dinner",
+          "latenight"
+        ],
+        "costLevel": "free",
+        "equipment": [
+          "电脑",
+          "Coursera / B 站 / 学堂在线"
+        ],
+        "prepTips": "Pick a top-university intro course",
+        "pairing": "Tea + notes"
+      }
+    },
+    {
+      "id": "play-b6-12",
+      "scene": "play",
+      "pool": "学习类",
+      "category": "learning",
+      "zh-CN": {
+        "title": "学茶道",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "茶具套装",
+          "乌龙或普洱"
+        ],
+        "prepTips": "买套装省事",
+        "pairing": "茶 + 静心"
+      },
+      "en-US": {
+        "title": "Tea Ceremony",
+        "emoji": "📚",
+        "allergens": [],
+        "difficulty": 2,
+        "timeMinutes": 60,
+        "availableTimes": [
+          "tea"
+        ],
+        "costLevel": "low",
+        "equipment": [
+          "茶具套装",
+          "乌龙或普洱"
+        ],
+        "prepTips": "Buy a starter tea set",
+        "pairing": "Tea + calm"
+      }
+    }
+  ]
+}
