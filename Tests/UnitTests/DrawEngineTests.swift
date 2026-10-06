@@ -98,7 +98,7 @@ final class DrawEngineTests: XCTestCase {
                 TestFixtures.makeCard(title: "鸡肉2", metadata: ["mainIngredient": "鸡肉"]),
                 TestFixtures.makeCard(title: "鱼肉", metadata: ["mainIngredient": "鱼"])
             ],
-            mainIngredientCount24h: ["鸡肉": 1]
+            mainIngredientCount24h: ["鸡肉": 2]  // 已吃过 2 次 → 第三次起 ban
         )
 
         let engine = RuleBasedEngine()
@@ -155,11 +155,12 @@ final class DrawEngineTests: XCTestCase {
 
         let engine = RuleBasedEngine()
         var favoritesCount = 0
-        for _ in 0..<100 {
+        for _ in 0..<500 {
             let r = try await engine.draw(context: context)
             if r.card.title == "收藏卡" { favoritesCount += 1 }
         }
-        XCTAssertGreaterThan(favoritesCount, 50)
+        // 1.2/(1.0+1.2)≈54.5% 期望，500 次期望 272.5；阈值设 250（留 22 次缓冲）
+        XCTAssertGreaterThan(favoritesCount, 250)
     }
 
     // MARK: - T09 新卡优先
