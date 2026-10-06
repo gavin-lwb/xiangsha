@@ -240,7 +240,7 @@ struct AppSettingsView: View {
                     .font(Font.theme.caption)
                     .foregroundStyle(Color.theme.textSecondary)
             }
-            if let url = URL(string: "https://github.com/fengxiaohai/xiangsha/blob/main/xiangsha/Resources/privacy-policy.md") {
+            if let url = URL(string: "https://gavin-lwb.github.io/xiangsha/xiangsha/Resources/privacy-policy.md") {
                 Link(destination: url) {
                     HStack {
                         Text("隐私政策")
@@ -251,7 +251,7 @@ struct AppSettingsView: View {
                 }
             }
             // D096 反馈入口
-            if let url = URL(string: "https://github.com/fengxiaohai/xiangsha/issues") {
+            if let url = URL(string: "https://github.com/gavin-lwb/xiangsha/issues") {
                 Link(destination: url) {
                     HStack {
                         Label("反馈 / 建议", systemImage: "exclamationmark.bubble.fill")
