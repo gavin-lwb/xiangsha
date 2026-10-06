@@ -39,6 +39,8 @@ struct DrawAnimationView: View {
     @State private var emojiOpacity: Double = 0
     @State private var titleOpacity: Double = 0
     @State private var selectedRating: EmojiRating?
+    /// 动画序列 Task（多次抽取时 cancel 上一个避免 race）
+    @State private var animTask: Task<Void, Never>?
 
     enum Stage { case loading, reveal, result }
 
@@ -113,6 +115,10 @@ struct DrawAnimationView: View {
 
     /// 启动完整动画序列（重置 + loading → reveal → result）
     private func startAnimation() {
+        // 关键：cancel 上一个未完成的 task，避免多次抽取时 Task race
+        // 导致 stage 永远卡 loading（之前的 sleep 跑到一半被新 task 覆盖）
+        animTask?.cancel()
+
         // 重置所有 stage 状态
         emojiScale = 0.6
         emojiOpacity = 0
@@ -128,8 +134,9 @@ struct DrawAnimationView: View {
         }
 
         // 顺序推进 stage（用 Task 异步 sleep）
-        Task { @MainActor in
+        animTask = Task { @MainActor in
             try? await Task.sleep(nanoseconds: 800_000_000)
+            if Task.isCancelled { return }
             stage = .reveal
             emojiScale = 1.0
             emojiOpacity = 1.0
@@ -138,6 +145,7 @@ struct DrawAnimationView: View {
                 emojiOpacity = 1.0
             }
             try? await Task.sleep(nanoseconds: 800_000_000)
+            if Task.isCancelled { return }
             stage = .result
             withAnimation(.easeIn(duration: 0.3)) {
                 titleOpacity = 1.0
