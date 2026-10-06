@@ -491,7 +491,7 @@ struct RuleBasedEngine: DrawEngine {
             // T05 主料去重（D007 mainIngredientMaxPer24h）
             if rejected == nil,
                let mainIngredient = card.metadata?["mainIngredient"],
-               user.mainIngredientCount24h[mainIngredient, default: 0] > config.mainIngredientMaxPer24h {
+               user.mainIngredientCount24h[mainIngredient, default: 0] >= config.mainIngredientMaxPer24h {
                 rejected = ("mainIngredientRepeat", 0.0)
             }
 
