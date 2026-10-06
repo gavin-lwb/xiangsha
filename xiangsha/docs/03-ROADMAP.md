@@ -510,3 +510,16 @@ v1.2 是「文档级最后迭代」，下一步进入 **SPEC.md 拆分 + 工程�
 - Lead MCP 桥接不到时降级到 Lead 亲自干
 
 详细交接清单：`memory/handoff-2026-10-06.md`
+
+
+### ✅ 追加 2026-10-07 01:24 · Batch 2 完成
+- **Codex CLI 起草 B 玩啥 Batch 1 (80 张)** ✅ commit `314033e`
+- **Claude Code 创建 GitHub Actions workflow** ✅ commit `e8e1c00`
+- **Claude Code 生成 coverage report** `/tmp/xiangsha-cov.xcresult`（未 commit，artifact）
+- **P0-1 进度**：80/274 = 29.2%（Batch 1 + 2 完成，B 玩啥全完，还差 A 吃啥 59 + C 做啥 60 + D 拍啥 54）
+
+### ✅ 追加 2026-10-07 01:24 · 关键经验
+- **AionUi Team 唤醒机制**：lead mailbox 消息是 background priority，不触发 teammate 重启
+- **真正能唤醒的是 user 消息**（来源 `UserMessage` priority `Foreground`）→ 触发 lead foreground enqueue → AionUi rebuild teammate MCP → teammate 自动 attach + 读 mailbox + 干活
+- **OpenClaw wrapper 已生效**：Codex CLI 通过 wrapper 过滤了坏 spawn 参数，exec 通道已通（见 handoff §9）
+
