@@ -34,7 +34,7 @@ struct DoView: View {
                 if let scene = doScenes.first {
                     DoContentView(
                         scene: scene,
-                        pools: scene.cardPools,
+                        pools: viewModel.pools.isEmpty ? scene.cardPools : viewModel.pools,
                         profile: profiles.first,
                         viewModel: viewModel,
                         onAcceptComplete: { checkAchievements() },
