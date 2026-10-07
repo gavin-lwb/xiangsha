@@ -220,6 +220,7 @@ private struct EatContentView: View {
     @State private var showDrawAnimation: Bool = false
     @State private var drawAnimationCard: Card?
     @State private var drawAnimationIsLoading: Bool = true
+    @State private var drawAnimationError: DrawEngineError?
     // D047/D056：v1.1 roadmap sheet
     @State private var showRoadmapSheet: Bool = false
 
@@ -316,6 +317,7 @@ private struct EatContentView: View {
                 card: drawAnimationCard,
                 isLoading: drawAnimationIsLoading && drawAnimationCard == nil,
                 isCooked: drawAnimationCard.map { viewModel.cookedCardIDs.contains($0.id) } ?? false,
+                error: drawAnimationError,
                 onAccept: {
                     viewModel.accept()
                     onAcceptComplete()
@@ -342,6 +344,7 @@ private struct EatContentView: View {
                 onDismiss: {
                     showDrawAnimation = false
                     drawAnimationCard = nil
+                    drawAnimationError = nil
                 }
             )
         }
@@ -351,9 +354,13 @@ private struct EatContentView: View {
             if let result = viewModel.lastResult {
                 drawAnimationCard = lookupCard(id: result.card.id)
                 drawAnimationIsLoading = false
+                drawAnimationError = nil
             } else if viewModel.isLoading {
                 drawAnimationIsLoading = true
+                drawAnimationError = nil
             }
+            // noCandidates 时 lastResult 不变，但 error 被设置
+            drawAnimationError = viewModel.error
         }
         // Pattern 2：点击抽签结果放大详情
         .sheet(item: $detailCard) { wrapper in

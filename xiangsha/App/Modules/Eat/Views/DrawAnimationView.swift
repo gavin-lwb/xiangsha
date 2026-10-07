@@ -26,6 +26,8 @@ struct DrawAnimationView: View {
     let card: Card?
     let isLoading: Bool
     let isCooked: Bool
+    /// 抽签错误（如全被拒导致 .noCandidates）；error != nil 且 card == nil 时显示错误页
+    let error: DrawEngineError?
     let onAccept: () -> Void
     let onReject: () -> Void
     let onRate: (EmojiRating) -> Void
@@ -98,7 +100,7 @@ struct DrawAnimationView: View {
         ZStack {
             // 背景渐变
             LinearGradient(
-                colors: backgroundColors(for: stage),
+                colors: error != nil && card == nil ? [Color.theme.danger.opacity(0.15), Color.theme.background] : backgroundColors(for: stage),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -107,44 +109,78 @@ struct DrawAnimationView: View {
             VStack(spacing: ThemeSpacing.xl) {
                 Spacer()
 
-                Text(stageTitle(for: stage))
-                    .font(Font.theme.title1)
-                    .foregroundStyle(Color.theme.textPrimary)
-                    .padding(.top, ThemeSpacing.huge)
-
-                Spacer()
-
-                // emoji 区域
-                emojiArea(stage: stage, revealProgress: revealProgress, spinAngle: spinAngle, loadingScale: loadingScale)
-
-                // 标题 / 文案
-                if stage != .loading, let card {
-                    Text(card.displayTitle)
-                        .font(Font.theme.heroTitle)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(Color.theme.textPrimary)
+                // error 状态：显示错误页（0.8s 后自动 dismiss）
+                if let error, card == nil {
+                    VStack(spacing: ThemeSpacing.lg) {
+                        Text("🦊")
+                            .font(.system(size: 80))
+                            .opacity(0.6)
+                        Text(errorMessage(for: error))
+                            .font(Font.theme.title1)
+                            .foregroundStyle(Color.theme.textPrimary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, ThemeSpacing.xl)
+                        Button(action: onDismiss) {
+                            Text("知道了")
+                                .font(Font.theme.buttonLarge)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.theme.accent, in: RoundedRectangle(cornerRadius: ThemeRadius.md))
+                                .foregroundStyle(Color.theme.textOnPrimary)
+                        }
                         .padding(.horizontal, ThemeSpacing.xl)
-                        .opacity(titleProgress)
-
-                    HStack(spacing: ThemeSpacing.md) {
-                        Label("\(card.timeMinutes) 分钟", systemImage: "clock.fill")
-                        Label(difficultyText(card.difficulty), systemImage: "chart.bar.fill")
+                        .padding(.top, ThemeSpacing.md)
                     }
-                    .font(Font.theme.callout)
-                    .foregroundStyle(Color.theme.textSecondary)
-                    .padding(.top, ThemeSpacing.xs)
-                    .opacity(titleProgress)
-                }
+                    .padding(.top, ThemeSpacing.huge)
+                } else {
+                    // 正常流程
+                    Text(stageTitle(for: stage))
+                        .font(Font.theme.title1)
+                        .foregroundStyle(Color.theme.textPrimary)
+                        .padding(.top, ThemeSpacing.huge)
 
-                Spacer()
+                    Spacer()
 
-                // 底部按钮（只在 result 阶段显示）
-                if stage == .result {
-                    bottomButtons
-                        .padding(.horizontal, ThemeSpacing.lg)
+                    // emoji 区域
+                    emojiArea(stage: stage, revealProgress: revealProgress, spinAngle: spinAngle, loadingScale: loadingScale)
+
+                    // 标题 / 文案
+                    if stage != .loading, let card {
+                        Text(card.displayTitle)
+                            .font(Font.theme.heroTitle)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(Color.theme.textPrimary)
+                            .padding(.horizontal, ThemeSpacing.xl)
+                            .opacity(titleProgress)
+
+                        HStack(spacing: ThemeSpacing.md) {
+                            Label("\(card.timeMinutes) 分钟", systemImage: "clock.fill")
+                            Label(difficultyText(card.difficulty), systemImage: "chart.bar.fill")
+                        }
+                        .font(Font.theme.callout)
+                        .foregroundStyle(Color.theme.textSecondary)
+                        .padding(.top, ThemeSpacing.xs)
+                        .opacity(titleProgress)
+                    }
+
+                    Spacer()
+
+                    // 底部按钮（只在 result 阶段显示）
+                    if stage == .result {
+                        bottomButtons
+                            .padding(.horizontal, ThemeSpacing.lg)
+                    }
                 }
             }
             .padding(.bottom, ThemeSpacing.xl)
+        }
+        // error != nil && card == nil → 0.8s 后自动 dismiss
+        .onAppear {
+            if error != nil && card == nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    onDismiss()
+                }
+            }
         }
     }
 
@@ -299,6 +335,17 @@ struct DrawAnimationView: View {
             return [Color.theme.accentSubtle.opacity(0.5), Color.theme.background]
         case .reveal, .result:
             return [Color.theme.accent.opacity(0.2), Color.theme.accentSubtle]
+        }
+    }
+
+    private func errorMessage(for error: DrawEngineError) -> String {
+        switch error {
+        case .noCandidates:
+            return "今天候选都试过啦\n明天再来问问小狐狸吧 🦊"
+        case .invalidContext(let reason):
+            return "小狐狸迷路了…\n\(reason)"
+        case .notImplemented:
+            return "功能还在准备中\n稍后再试试 🦊"
         }
     }
 
